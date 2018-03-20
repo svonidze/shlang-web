@@ -1,0 +1,10 @@
+<section>
+    <button (click)="toggle()">^</button>
+    {{title}} {{words?.length}}
+    <ul *ngIf="!collapsed">
+        <li *ngFor="let word of words">
+            <input type="checkbox" [(ngModel)]="word.known" (change)="itemMarkedAsKnown(word)" />
+            <label>{{word.count}} {{word.value}}</label>
+        </li>
+    </ul>
+</section>

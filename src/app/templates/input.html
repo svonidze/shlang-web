@@ -1,0 +1,14 @@
+<textarea [(ngModel)]="input"></textarea>
+<section>
+    <input type="checkbox" [(ngModel)]="parsingOption.ignoreOneLetterWords">
+    <label>Ignore one letter words</label>
+</section>
+<section>
+    <button (click)="parse()">Parse</button>
+</section>
+
+<section>
+    <h2>Words detected {{parsingResults?.length}}</h2>
+    <app-word-list [words]='fetchKnownWords()' title='Known' [collapsedByDefault]='true'></app-word-list>
+    <app-word-list [words]='fetchUnknownWords()' title='Unknown' [collapsedByDefault]='false'></app-word-list>
+</section>
