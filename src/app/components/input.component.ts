@@ -24,6 +24,7 @@ group -> reduce https://stackoverflow.com/questions/45334848/javascript-equivale
 @Component({
     selector: 'app-input',
     templateUrl: './../templates/input.html',
+    styleUrls: ['./../input.component.css'],
     providers: [InputService, UserWordLocalStorageService]
 })
 export class InputComponent implements OnInit {
