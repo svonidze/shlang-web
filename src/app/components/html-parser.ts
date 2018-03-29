@@ -8,19 +8,18 @@ export class HtmlParser {
 
         const elements = doc.querySelectorAll('style, script');
 
-        console.log(elements);
-
         let i = 0;
         let element: Element;
         while (element = elements[i]) {
             if (!element.parentNode) {
-                console.log(element);
                 i++;
                 continue;
             }
             element.parentNode.removeChild(element);
         }
 
-        return doc.textContent.replace(/[\n\r\s]{2,}/g, '');
+        return doc.textContent
+            .replace(/(\r?\n)+(\s)+/g, '\r\n')
+            .replace(/(\s){2,}/g, '$1');
     }
 }

@@ -63,7 +63,6 @@ export class InputComponent implements OnInit {
                 request.onreadystatechange = (event) => {
                     console.log(event);
                     if (request.readyState === 4 && request.status === 200) {
-                        // console.log(request.responseText);
                         this.input = this.htmlParser.extractText(request.responseText);
                     } else {
                         console.log('could not download the page content', request);

@@ -29,13 +29,23 @@ describe('HtmlParser', () => {
 </head>
 <body>
  <div id="dummy"></div>
- <p>P text</p>
+ <p>P text
+    
+    New line  text  with  many  whitespaces
+   one    two three
+ </p>
  <form>
   <input type="submit" value="Remove DUMMY" onclick="removeDummy(); "/>
  </form>
 </body>
 `);
 
-        expect(result).toEqual('P text');
+        expect(
+`
+P text
+New line text with many whitespaces
+one two three
+`)
+        .toEqual(result);
     }));
 });
