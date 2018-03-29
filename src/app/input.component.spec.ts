@@ -3,6 +3,7 @@ import { TestBed, async } from '@angular/core/testing';
 
 import { InputComponent } from './components/input.component';
 import { WordListComponent } from './components/word-list.component';
+import {} from 'jasmine';
 
 describe('InputComponent', () => {
   beforeEach(async(() => {

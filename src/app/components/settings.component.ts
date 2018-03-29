@@ -6,8 +6,7 @@ import { UserWordLocalStorageService } from '../services/user-word-local-storage
 
 @Component({
     selector: 'app-settings',
-    templateUrl: '../templates/settings.html',
-    styles: ['float:right;']
+    templateUrl: '../templates/settings.html'
 })
 export class SettingsComponent {
     constructor(private storageService: UserWordLocalStorageService) { }
@@ -59,4 +58,3 @@ export class SettingsComponent {
         uploadDialog.click();
     }
 }
-

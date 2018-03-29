@@ -6,6 +6,7 @@ import { InputService } from './../services/input.service';
 import { UserWordLocalStorageService } from './../services/user-word-local-storage.service';
 import { ActivatedRoute } from '@angular/router';
 import { encode, decode } from '@angular/router/src/url_tree';
+import { HtmlParser } from './html-parser';
 // https://stackoverflow.com/questions/18936774/javascript-equivalent-to-c-sharp-linq-select
 /*
 arrayFilter() -> Where()
@@ -36,7 +37,8 @@ export class InputComponent implements OnInit {
     constructor(private zone: NgZone,
         private route: ActivatedRoute,
         private service: InputService,
-        private userWordService: UserWordLocalStorageService) {
+        private userWordService: UserWordLocalStorageService,
+        private htmlParser: HtmlParser) {
         this.parsingOption = new ParsingOption();
         this.parsingOption.ignoreOneLetterWords = true;
     }
@@ -54,7 +56,19 @@ export class InputComponent implements OnInit {
                 this.parse();
             } else if (pageUrl) {
                 pageUrl = decodeURI(pageUrl);
-                console.log('url passed, no idea what to do', pageUrl);
+                console.log('url passed', pageUrl);
+
+                const request = new XMLHttpRequest();
+                request.open('GET', pageUrl);
+                request.onreadystatechange = (event) => {
+                    console.log(event);
+                    if (request.readyState === 4 && request.status === 200) {
+                        this.input = this.htmlParser.extractText(request.responseText);
+                    } else {
+                        console.log('could not download the page content', request);
+                    }
+                };
+                request.send(null);
             }
         });
     }

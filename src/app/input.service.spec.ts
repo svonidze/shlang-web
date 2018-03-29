@@ -2,6 +2,7 @@ import { ParsingResult } from './model/parsing-result';
 import { TestBed, async } from '@angular/core/testing';
 import { InputService } from './services/input.service';
 import { ParsingOption } from './model/parsing-option';
+import {} from 'jasmine';
 
 describe('InputService', () => {
     let service: InputService;

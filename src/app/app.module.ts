@@ -1,3 +1,4 @@
+import { HtmlParser } from './components/html-parser';
 import { AppRoutingModule } from './app-routing.module';
 import { WordListComponent } from './components/word-list.component';
 import { InputService } from './services/input.service';
@@ -28,7 +29,8 @@ import { SettingsComponent } from './components/settings.component';
   providers: [
     InputService,
     UserWordLocalStorageService,
-    ContextMenu
+    ContextMenu,
+    HtmlParser
   ],
   bootstrap: [AppComponent]
 })
