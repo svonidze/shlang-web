@@ -1,3 +1,4 @@
+import { ConsoleLoggerService } from './logging/console-logger.service';
 import { HtmlParser } from './components/html-parser';
 import { AppRoutingModule } from './app-routing.module';
 import { WordListComponent } from './components/word-list.component';
@@ -12,6 +13,7 @@ import { AppComponent } from './components/app.component';
 import { UserWordLocalStorageService } from './services/user-word-local-storage.service';
 import { ActivatedRoute, RouterModule, Routes } from '@angular/router';
 import { SettingsComponent } from './components/settings.component';
+import { LoggerService } from './logging/logger.service';
 
 @NgModule({
   declarations: [
@@ -30,7 +32,8 @@ import { SettingsComponent } from './components/settings.component';
     InputService,
     UserWordLocalStorageService,
     ContextMenu,
-    HtmlParser
+    HtmlParser,
+    { provide: LoggerService, useClass: ConsoleLoggerService },
   ],
   bootstrap: [AppComponent]
 })

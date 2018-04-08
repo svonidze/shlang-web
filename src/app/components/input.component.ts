@@ -7,6 +7,7 @@ import { UserWordLocalStorageService } from './../services/user-word-local-stora
 import { ActivatedRoute } from '@angular/router';
 import { encode, decode } from '@angular/router/src/url_tree';
 import { HtmlParser } from './html-parser';
+import { LoggerService } from '../logging/logger.service';
 // https://stackoverflow.com/questions/18936774/javascript-equivalent-to-c-sharp-linq-select
 /*
 arrayFilter() -> Where()
@@ -38,34 +39,35 @@ export class InputComponent implements OnInit {
         private route: ActivatedRoute,
         private service: InputService,
         private userWordService: UserWordLocalStorageService,
-        private htmlParser: HtmlParser) {
+        private htmlParser: HtmlParser,
+        private log: LoggerService) {
         this.parsingOption = new ParsingOption();
         this.parsingOption.ignoreOneLetterWords = true;
     }
 
     ngOnInit(): void {
-        console.log('ngOnInit');
+        this.log.info('ngOnInit');
         this.route.queryParams.subscribe(queryParams => {
-            console.log('subscribe', queryParams);
+            this.log.info('subscribe', queryParams);
             let text = queryParams.text;
             let pageUrl = queryParams.pageUrl;
             if (text) {
                 text = decodeURI(text);
-                console.log('subscribe', text);
+                this.log.info('subscribe', text);
                 this.input = text;
                 this.parse();
             } else if (pageUrl) {
                 pageUrl = decodeURI(pageUrl);
-                console.log('url passed', pageUrl);
+                this.log.info('url passed', pageUrl);
 
                 const request = new XMLHttpRequest();
                 request.open('GET', pageUrl);
                 request.onreadystatechange = (event) => {
-                    console.log(event);
+                    this.log.info(event);
                     if (request.readyState === 4 && request.status === 200) {
                         this.input = this.htmlParser.extractText(request.responseText);
                     } else {
-                        console.log('could not download the page content', request);
+                        this.log.info('could not download the page content', request);
                     }
                 };
                 request.send(null);
@@ -77,8 +79,23 @@ export class InputComponent implements OnInit {
         this.zone.run(
             () => {
                 this.parsingResults = this.service.parse(this.input, this.parsingOption);
-                this.parsingResults.forEach(word =>
-                    word.known = this.userWordService.exist(word));
+
+                this.parsingResults.forEach(parsingResult => {
+                    if (this.userWordService.exist(parsingResult)) {
+                        this.log.info('word "' + parsingResult.value + '" was known.');
+
+                        const userWord = this.userWordService.get(parsingResult);
+                        if (userWord.repeatNextTimes > 0) {
+                            userWord.repeatNextTimes--;
+                            this.userWordService.set(userWord);
+                        }
+
+                        parsingResult.known = !userWord.repeatNextTimes || userWord.repeatNextTimes <= 0;
+                        parsingResult.repeatNextTimes = userWord.repeatNextTimes;
+
+                    }
+                }
+                );
             });
     }
 

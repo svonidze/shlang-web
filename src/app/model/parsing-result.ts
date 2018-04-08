@@ -1,15 +1,17 @@
-import { IWord } from './word';
+import { IUserWord } from './word';
 
-export interface IParsingResult extends IWord {
+export interface IParsingResult extends IUserWord {
     count: number;
     known: boolean;
+    editable: boolean;
 }
 
 export class ParsingResult implements IParsingResult {
+    editable: boolean;
     value: string;
     count: number;
     known: boolean;
-    languageCode: string;
+    repeatNextTimes: number;
 
     constructor(value: string, count: number, known: boolean = false) {
         this.value = value;

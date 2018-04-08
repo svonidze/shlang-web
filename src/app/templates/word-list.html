@@ -3,8 +3,11 @@
     {{title}} {{words?.length}}
     <ul *ngIf="!collapsed">
         <li *ngFor="let word of words">
-            <input type="checkbox" [(ngModel)]="word.known" (change)="itemMarkedAsKnown(word)" />
-            <label>{{word.count}} {{word.value}}</label>
+            <input type="checkbox" [(ngModel)]="word.known" (change)="itemMarkedAsKnown(word)" (keyup)="onKey($event, word)" />
+            <label>{{word.count}}</label>
+            <input [(ngModel)]="word.value" *ngIf="word.editable" (keyup)="onKey($event, word)" />
+            <label *ngIf="!word.editable">{{word.value}}</label>
+            <label *ngIf="word.repeatNextTimes > 0">{{word.repeatNextTimes}}</label>
         </li>
     </ul>
 </section>
