@@ -9,6 +9,6 @@
 
 <section>
     <h2>Words detected {{parsingResults?.length}}</h2>
-    <app-word-list [words]='fetchKnownWords()' title='Known' [collapsedByDefault]='true'></app-word-list>
-    <app-word-list [words]='fetchUnknownWords()' title='Unknown' [collapsedByDefault]='false'></app-word-list>
+    <app-word-list [words]='fetchLearnedWords()' title='Learned' [collapsedByDefault]='true'></app-word-list>
+    <app-word-list [words]='fetchToLearnWords()' title='To Learn' [collapsedByDefault]='false'></app-word-list>
 </section>

@@ -26,8 +26,12 @@ export class WordListComponent {
         private zone: NgZone,
         private wordStorage: UserWordLocalStorageService) { }
 
-    itemMarkedAsKnown(word: IParsingResult) {
-        if (word.known) {
+    onToLearn(word: IParsingResult) {
+        if (word.toLearn) {
+            if (word.repeatNextTimes > 0) {
+                word.repeatNextTimes--;
+            }
+
             this.wordStorage.add(word);
         } else {
             word.repeatNextTimes = 0;
@@ -57,8 +61,8 @@ export class WordListComponent {
                         word.repeatNextTimes = 0;
                     }
                     word.repeatNextTimes += 5;
-                    word.known = true;
-                    this.itemMarkedAsKnown(word);
+                    word.toLearn = true;
+                    this.onToLearn(word);
 
                     console.log(word);
                 });

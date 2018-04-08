@@ -82,15 +82,9 @@ export class InputComponent implements OnInit {
 
                 this.parsingResults.forEach(parsingResult => {
                     if (this.userWordService.exist(parsingResult)) {
-                        this.log.info('word "' + parsingResult.value + '" was known.');
-
                         const userWord = this.userWordService.get(parsingResult);
-                        if (userWord.repeatNextTimes > 0) {
-                            userWord.repeatNextTimes--;
-                            this.userWordService.set(userWord);
-                        }
 
-                        parsingResult.known = !userWord.repeatNextTimes || userWord.repeatNextTimes <= 0;
+                        parsingResult.toLearn = !userWord.repeatNextTimes || userWord.repeatNextTimes <= 0;
                         parsingResult.repeatNextTimes = userWord.repeatNextTimes;
 
                     }
@@ -99,19 +93,19 @@ export class InputComponent implements OnInit {
             });
     }
 
-    fetchKnownWords() {
+    fetchLearnedWords() {
         return this.fetchWords(true);
     }
 
-    fetchUnknownWords() {
+    fetchToLearnWords() {
         return this.fetchWords(false);
     }
 
-    fetchWords(known: boolean) {
+    fetchWords(toLearn: boolean) {
         if (!this.parsingResults) {
             return this.parsingResults;
         }
 
-        return this.parsingResults.filter(item => item.known === known);
+        return this.parsingResults.filter(item => item.toLearn === toLearn);
     }
 }

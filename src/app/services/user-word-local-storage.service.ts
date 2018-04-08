@@ -39,12 +39,11 @@ export class UserWordLocalStorageService {
     }
 
     get(word: IWord): IUserWord {
-        this.log.info('get', word);
+        this.log.info('get');
 
         const json = localStorage.getItem(word.value);
 
         if (json && json !== 'undefined') {
-            this.log.warn('json', json.length, json);
             const userWord = JSON.parse(json) as IUserWord;
             userWord.value = word.value;
             return userWord;
