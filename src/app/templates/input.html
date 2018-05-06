@@ -1,14 +1,19 @@
 <textarea [(ngModel)]="input"></textarea>
+
+<section>
+    <a *ngIf="parsedPageUrl" href="{{parsedPageUrl}}">Source page</a>
+</section>
+    
 <section>
     <input type="checkbox" [(ngModel)]="parsingOption.ignoreOneLetterWords">
     <label>Ignore one letter words</label>
 </section>
 <section>
-    <button (click)="parse()">Parse</button>
+    <button (click)="parseInput()">Parse</button>
 </section>
 
 <section>
-    <h2>Words detected {{parsingResults?.length}}</h2>
+    <h2 *ngIf="parsingResults">Words detected {{parsingResults?.length}}</h2>
     <app-word-list [words]='fetchLearnedWords()' title='Learned' [collapsedByDefault]='true'></app-word-list>
     <app-word-list [words]='fetchToLearnWords()' title='To Learn' [collapsedByDefault]='false'></app-word-list>
 </section>

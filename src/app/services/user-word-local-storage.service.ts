@@ -13,7 +13,7 @@ export class UserWordLocalStorageService {
 
     exist(word: IWord): boolean {
         const exist = localStorage.getItem(word.value) !== null;
-        this.log.info('word "', word.value, '" exists?', exist);
+        // this.log.info('word "', word.value, '" exists?', exist);
         return exist;
     }
 
