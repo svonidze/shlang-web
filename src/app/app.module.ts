@@ -12,7 +12,7 @@ import { InputComponent } from './components/input.component';
 import { AppComponent } from './components/app.component';
 import { UserWordLocalStorageService } from './services/user-word-local-storage.service';
 import { ActivatedRoute, RouterModule, Routes } from '@angular/router';
-import { SettingsComponent } from './components/settings.component';
+import { SettingsComponent, GoogleDriveApi } from './components/settings.component';
 import { LoggerService } from './logging/logger.service';
 
 @NgModule({
@@ -25,7 +25,7 @@ import { LoggerService } from './logging/logger.service';
   imports: [
     BrowserModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   exports: [RouterModule],
   providers: [
@@ -34,6 +34,7 @@ import { LoggerService } from './logging/logger.service';
     ContextMenu,
     HtmlParser,
     { provide: LoggerService, useClass: ConsoleLoggerService },
+    GoogleDriveApi
   ],
   bootstrap: [AppComponent]
 })

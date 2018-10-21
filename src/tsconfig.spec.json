@@ -7,7 +7,11 @@
     "target": "es5",
     "types": [
       "jasmine",
-      "node"
+      "node",
+      "gapi", 
+      "gapi.auth2",
+      "gapi.client",
+      "gapi.client.drive"
     ]
   },
   "files": [
