@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 
 import { UserConfiguration } from "../models/UserConfiguration";
 import { UserWordLocalStorageService } from '../services/WordLocalStorage';
+import { GoogleDrive } from './integration/GoogleDrive';
 
 export default function Settings() {
     const wordStorage = new UserWordLocalStorageService();
@@ -10,13 +11,16 @@ export default function Settings() {
     return (
         <div>
             <label>Backup</label>
-            {/* <button onClick="saveToCloud('Google Drive')"></button> */}
+            <GoogleDrive></GoogleDrive>
+            {/* <button onClick={() => saveToCloud('Google Drive')}></button> */}
             <br />
             <button onClick={() => exportConfigAsFile(wordStorage)}>Export</button>
             <button onClick={() => tryImportConfigFile(wordStorage)}>Import</button>
         </div>
     )
 }
+
+
 
 function exportConfigAsFile(wordStorage: UserWordLocalStorageService) {
     const configuration = extractUserConfiguration(wordStorage);
