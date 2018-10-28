@@ -20,6 +20,9 @@ const SCOPES = [
 ];
 
 export class GoogleDrive extends React.Component {
+    oauthToken: any;
+    pickerApiLoaded = false;
+
     componentDidMount() {
         loadAndInjectJS(
             'https://apis.google.com/js/api.js',
@@ -44,27 +47,31 @@ export class GoogleDrive extends React.Component {
         return (
             <div>
                 <h1>GoogleDrive authorization</h1>
-                <button onClick={() => this.handleAuthClick(false)}>Authorize</button>
-                <button onClick={() => this.handleAuthClick(true)}>Load Files</button>
+                <button onClick={() => this.auth(false)}>Authorize</button>
+                <button onClick={this.onOpenPicker.bind(this)}>Load Files</button>
             </div>);
     }
 
-    handleAuthResult(authResult: any) {
-        console.log('authResult', authResult);
-        if (authResult && !authResult.error) {
-            this.makeApiCall();
-        } else {
-            //$('#auth-button').show();
-            // could show a message here.
+    auth(immediate: boolean, force = false) {
+        if(this.oauthToken && !force){
+            console.log('auth was already done')
+            return;
         }
-    }
 
-    handleAuthClick(immediate: boolean) {
         gapi.auth.authorize({
             client_id: CLIENT_ID,
             scope: SCOPES,
             immediate: immediate
-        }, this.handleAuthResult.bind(this));
+        }, (authResult) => {
+            console.log('authResult', authResult);
+            if (authResult && !authResult.error) {
+                this.oauthToken = authResult.access_token;
+                this.makeApiCall();
+            } else {
+                //$('#auth-button').show();
+                // could show a message here.
+            }
+        });
         return false;
 
         /*
@@ -108,4 +115,40 @@ export class GoogleDrive extends React.Component {
             }
         });
     }
+
+    onOpenPicker() {
+        gapi.load('picker', () => {
+            console.log('picker API loaded');
+            this.pickerApiLoaded = true;
+            this.createPicker();
+        });
+    }
+
+    createPicker() {
+        if (this.pickerApiLoaded && this.oauthToken) {
+            var picker = new google.picker.PickerBuilder().
+                addView(google.picker.ViewId.DOCS).
+                setOAuthToken(this.oauthToken).
+                setDeveloperKey(API_KEY).
+                setCallback(this.pickerCallback.bind(this)).
+                build();
+            picker.setVisible(true);
+        }
+        else{
+            console.warn(this.pickerApiLoaded, this.oauthToken)
+        }
+    }
+
+    // A simple callback implementation.
+    pickerCallback(data: any) {
+        var url = 'nothing';
+        if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+            var doc = data[google.picker.Response.DOCUMENTS][0];
+            url = doc[google.picker.Document.URL];
+        }
+        var message = 'You picked: ' + url;
+        console.warn(message);
+    }
+
+
 }

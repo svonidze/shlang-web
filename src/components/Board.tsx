@@ -57,7 +57,7 @@ export class Board extends React.Component<IProps & IActionProps, IState> {
         const sortWords = (toLearn: boolean) =>
             this.props.words.filter(w => w.toLearn === toLearn)
                 .sort((a, b) => 
-                    compare(a, b, x => x.count) 
+                    compare(b, a, x => x.count) 
                     || compare(a, b, x => x.value));
 
         const createWordBoard = (title: string, toLearn: boolean) =>

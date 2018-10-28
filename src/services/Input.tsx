@@ -1,6 +1,6 @@
 import { IParsingOption } from '../models/ParsingOption'
 import { IParsedWord, ParsedWord, IParsingResult } from '../models/ParsingResult'
-import { UnicodeAllLeters, SpecialNonLetterChars } from '../constants/CharSets';
+import { UnicodeAllLeters } from '../constants/CharSets';
 import { ConsoleLoggerService } from './ConsoleLogger';
 import { extractTextFromHtml } from "./HtmlParser";
 
@@ -60,16 +60,11 @@ function parseText(input: string | undefined, parsingOption: IParsingOption): IP
         console.warn('parseText', 'input was empty', input);
         return result;
     }
-    if (input.startsWith('http')) {
-        console.warn('parseText', `URL detected ${input}. No idea what to do.`);
-        // todo make it downloading? or redicrecting to readable view
 
-        return result;
-    }
     const minWordLenght = parsingOption.ignoreOneLetterWords ? 1 : 0;
 
     // See https://github.com/wooorm/franc/ for language detection
-    const splitRegex = new RegExp('[^' + UnicodeAllLeters + SpecialNonLetterChars + ']+');
+    const splitRegex = new RegExp('[^' + UnicodeAllLeters + ']+'); // + SpecialNonLetterChars
 
     const groups = input.split(splitRegex)
         .filter(i => i.length > minWordLenght)
