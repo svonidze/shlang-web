@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 import { UserConfiguration } from "../models/UserConfiguration";
 import { UserWordLocalStorageService } from '../services/WordLocalStorage';
 import { GoogleDrive } from './integration/GoogleDrive';
+import { BACKUP_FILE } from 'src/constants';
 
 export default function Settings() {
     const wordStorage = new UserWordLocalStorageService();
@@ -20,15 +21,13 @@ export default function Settings() {
     )
 }
 
-
-
 function exportConfigAsFile(wordStorage: UserWordLocalStorageService) {
     const configuration = extractUserConfiguration(wordStorage);
     const blob = new Blob(
         [JSON.stringify(configuration)],
-        { type: 'application/json;charset=utf-8;' });
+        { type: BACKUP_FILE.MIME_type });
 
-    saveAs(blob, 'shlang-user-data-backup.json');
+    saveAs(blob, BACKUP_FILE.name);
 }
 
 function tryImportConfigFile(storageService: UserWordLocalStorageService) {
@@ -68,7 +67,7 @@ function tryImportConfigFile(storageService: UserWordLocalStorageService) {
     uploadDialog.click();
 }
 
-function extractUserConfiguration(storageService: UserWordLocalStorageService): UserConfiguration {
+export function extractUserConfiguration(storageService: UserWordLocalStorageService): UserConfiguration {
     const configuration = new UserConfiguration();
     configuration.userWords = storageService.getAll();
     return configuration;

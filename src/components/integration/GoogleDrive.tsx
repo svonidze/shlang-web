@@ -1,5 +1,9 @@
 import * as React from "react";
 import { loadAndInjectJS } from "../../services/DOM";
+import { newFile as newDriveFile, downloadDriveFile } from './GoogleDriveAPI'
+import { UserWordLocalStorageService } from "src/services/WordLocalStorage";
+import { extractUserConfiguration } from "../Settings";
+import { BACKUP_FILE } from "src/constants";
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = '358710366205-qtbhkrq2ovvhqhsl24h61nmp7luafpjg.apps.googleusercontent.com';
@@ -19,9 +23,26 @@ const SCOPES = [
     'https://www.googleapis.com/auth/drive.apps.readonly',
 ];
 
-export class GoogleDrive extends React.Component {
-    oauthToken: any;
-    pickerApiLoaded = false;
+interface IProps {
+}
+
+interface IState {
+    oauthToken?: string,
+    file?: {
+        id: string,
+        name: string,
+        url: string
+    };
+}
+
+export class GoogleDrive extends React.Component<IProps, IState> {
+    localConfigStorage: UserWordLocalStorageService;
+
+    constructor(props: IProps) {
+        super(props);
+        this.state = {};
+        this.localConfigStorage = new UserWordLocalStorageService();
+    }
 
     componentDidMount() {
         loadAndInjectJS(
@@ -47,13 +68,24 @@ export class GoogleDrive extends React.Component {
         return (
             <div>
                 <h1>GoogleDrive authorization</h1>
-                <button onClick={() => this.auth(false)}>Authorize</button>
-                <button onClick={this.onOpenPicker.bind(this)}>Load Files</button>
+                {this.state.file &&
+                    <section>
+                        <a href={this.state.file.url}>{`${this.state.file.name} (${this.state.file.id})`}</a>
+                    </section>
+                }
+                {this.state.oauthToken
+                    ?
+                    <div>
+                        <button onClick={this.onOpenPicker.bind(this)}>Exisitng file</button>
+                        <button onClick={this.newFile.bind(this)}>New file</button>
+                    </div>
+                    : <button onClick={() => this.auth(false)}>Authorize</button>
+                }
             </div>);
     }
 
     auth(immediate: boolean, force = false) {
-        if(this.oauthToken && !force){
+        if (this.state.oauthToken && !force) {
             console.log('auth was already done')
             return;
         }
@@ -65,27 +97,13 @@ export class GoogleDrive extends React.Component {
         }, (authResult) => {
             console.log('authResult', authResult);
             if (authResult && !authResult.error) {
-                this.oauthToken = authResult.access_token;
-                this.makeApiCall();
+                this.setState({ ...this.state, oauthToken: authResult.access_token });
             } else {
+                console.warn('fail', authResult.error);
                 //$('#auth-button').show();
                 // could show a message here.
             }
         });
-        return false;
-
-        /*
-        gapi.auth.authorize({ client_id: CLIENT_ID, scope: SCOPES, immediate: true }, authResult => {
-                        console.log('GoogleDrive', authResult);
-                        if (authResult && !authResult.error) {
-                            console.log('success');
-                            // handle succesfull authorization 
-                        } else {
-                            console.warn('fail', authResult.error);
-                            // handle authorization error 
-                        }
-                    });
-        */
     }
 
     makeApiCall() {
@@ -119,36 +137,64 @@ export class GoogleDrive extends React.Component {
     onOpenPicker() {
         gapi.load('picker', () => {
             console.log('picker API loaded');
-            this.pickerApiLoaded = true;
             this.createPicker();
         });
     }
 
     createPicker() {
-        if (this.pickerApiLoaded && this.oauthToken) {
-            var picker = new google.picker.PickerBuilder().
-                addView(google.picker.ViewId.DOCS).
-                setOAuthToken(this.oauthToken).
-                setDeveloperKey(API_KEY).
-                setCallback(this.pickerCallback.bind(this)).
-                build();
+        if (this.state.oauthToken) {
+            const picker = new google.picker.PickerBuilder()
+                .addView(google.picker.ViewId.DOCS)
+                .setOAuthToken(this.state.oauthToken)
+                .setDeveloperKey(API_KEY)
+                .setCallback(this.pickerCallback.bind(this))
+                .build();
             picker.setVisible(true);
         }
-        else{
-            console.warn(this.pickerApiLoaded, this.oauthToken)
+        else {
+            this.auth(true, false);
         }
     }
 
-    // A simple callback implementation.
     pickerCallback(data: any) {
-        var url = 'nothing';
-        if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+        const action = data[google.picker.Response.ACTION];
+        if (action == google.picker.Action.PICKED) {
             var doc = data[google.picker.Response.DOCUMENTS][0];
-            url = doc[google.picker.Document.URL];
+            const fileId = doc[google.picker.Document.ID];
+            downloadDriveFile(fileId, this.state.oauthToken!, (content) => {
+                console.log(`Read file ${fileId} with content`, content)
+            });
+            this.setState({
+                ...this.state,
+                file: {
+                    id: fileId,
+                    name: doc[google.picker.Document.NAME],
+                    url: doc[google.picker.Document.URL]
+                }
+            });
+            console.info('You picked: ' + doc[google.picker.Document.URL], doc);
         }
-        var message = 'You picked: ' + url;
-        console.warn(message);
+        else {
+            console.warn('Action not hanlded', action, data)
+        }
     }
 
+    newFile() {
+        const configuration = extractUserConfiguration(this.localConfigStorage);
 
+        newDriveFile(
+            BACKUP_FILE.name,
+            BACKUP_FILE.MIME_type,
+            btoa(JSON.stringify(configuration)),
+            (r: any) => {
+                this.setState({
+                    ...this.state, file: {
+                        id: r.id,
+                        name: r.title,
+                        url: r.defaultOpenWithLink
+                    }
+                });
+            }
+        );
+    }
 }
