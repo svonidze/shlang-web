@@ -4,7 +4,7 @@ const boundary = '-------314159265358979323846';
 const delimiter = "\r\n--" + boundary + "\r\n";
 const close_delim = "\r\n--" + boundary + "--";
 
-export function newFile(
+export function createFile(
     fileName: string,
     contentType: string,
     base64Data: string,
@@ -49,7 +49,11 @@ export function newFile(
 
 }
 
-function updateDriveFile(fileId: string, contentType: string, base64Data: string, callback = null) {
+export function updateFile(
+    fileId: string,
+    contentType: string,
+    base64Data: string,
+    callback = null) {
     if (!fileId) {
         throw 'Missed fileId';
     }
@@ -127,11 +131,8 @@ function downloadDriveFile1(fileId: string, callback: Function) {
     */
 }
 
-export function downloadDriveFile(fileId: string, accessToken: string, callback: (data: any) => void) {
+export function readFile(fileId: string, accessToken: string, callback: (data: any) => void) {
     callback = callback || responseCallback;
-
-    // var accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-    //var accessToken = gapi.auth.getToken().access_token;
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "https://www.googleapis.com/drive/v3/files/" + fileId + '?alt=media', true);
@@ -146,13 +147,13 @@ export function downloadDriveFile(fileId: string, accessToken: string, callback:
                 break;
             case "json":
                 response = xhr.response;
-            default:
-                console.error(`Response type ${xhr.responseType} is not supported`, xhr.response);
                 break;
-
+            default:
+                console.error(`Response type '${xhr.responseType}' is not supported`, xhr.response);
+                break;
         }
 
-        if (xhr.status === 403) {
+        if (xhr.status !== 200) {
             /* TODO parse the error response
                         content {
              "error": {
@@ -170,12 +171,10 @@ export function downloadDriveFile(fileId: string, accessToken: string, callback:
              }
             }
             */
-            console.error(response);
+            console.error(xhr.status, response);
             return;
         }
-        var data = arrayBufferToString(xhr.response);
-        // var base64 = _arrayBufferToString(xhr.response);
-        callback(data);
+        callback(response);
     };
     // xhr.onreadystatechange = function () {
     //     if(xhr.readyState === 4 && xhr.status === 200) {
