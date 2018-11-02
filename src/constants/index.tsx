@@ -7,3 +7,8 @@ export type PRESS_KEY_ON_WORD = typeof PRESS_KEY_ON_WORD;
 
 export const PARSE_TEXT = 'PARSE_TEXT';
 export type PARSE_TEXT = typeof PARSE_TEXT;
+
+export const BACKUP_FILE = {
+    MIME_type: 'application/json;charset=utf-8;',
+    name: 'shlang-user-data-backup.json'
+}

@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { saveAs } from 'file-saver';
 
-import { UserConfiguration } from "../models/UserConfiguration";
 import { UserWordLocalStorageService } from '../services/WordLocalStorage';
+import { GoogleDrive } from './integration/GoogleDrive';
+import { BACKUP_FILE } from 'src/constants';
+import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/services/UserConfiguration';
 
 export default function Settings() {
     const wordStorage = new UserWordLocalStorageService();
@@ -10,7 +12,8 @@ export default function Settings() {
     return (
         <div>
             <label>Backup</label>
-            {/* <button onClick="saveToCloud('Google Drive')"></button> */}
+            <GoogleDrive></GoogleDrive>
+            {/* <button onClick={() => saveToCloud('Google Drive')}></button> */}
             <br />
             <button onClick={() => exportConfigAsFile(wordStorage)}>Export</button>
             <button onClick={() => tryImportConfigFile(wordStorage)}>Import</button>
@@ -22,9 +25,9 @@ function exportConfigAsFile(wordStorage: UserWordLocalStorageService) {
     const configuration = extractUserConfiguration(wordStorage);
     const blob = new Blob(
         [JSON.stringify(configuration)],
-        { type: 'application/json;charset=utf-8;' });
+        { type: BACKUP_FILE.MIME_type });
 
-    saveAs(blob, 'shlang-user-data-backup.json');
+    saveAs(blob, BACKUP_FILE.name);
 }
 
 function tryImportConfigFile(storageService: UserWordLocalStorageService) {
@@ -41,31 +44,11 @@ function tryImportConfigFile(storageService: UserWordLocalStorageService) {
 
         const fileReader = new FileReader();
         fileReader.onload = (onloadEvent) => {
-            let configuration: UserConfiguration;
-            try {
-                configuration = JSON.parse(onloadEvent!.target!['result']);
-            } catch (exception) {
-                alert('Could not read the file. See log for details.');
-                throw exception;
-            }
-
-            try {
-                const importResults = storageService.addAll(configuration.userWords);
-                console.log(importResults);
-            } catch (exception) {
-                alert('Could not import configuration from the file. See log for details.');
-                throw exception;
-            }
+            parseAndSyncUserConfiguration(onloadEvent!.target!['result'], storageService);
         };
 
         fileReader.readAsText(files[0]);
     });
 
     uploadDialog.click();
-}
-
-function extractUserConfiguration(storageService: UserWordLocalStorageService): UserConfiguration {
-    const configuration = new UserConfiguration();
-    configuration.userWords = storageService.getAll();
-    return configuration;
 }

@@ -93,6 +93,9 @@ export class UserWordLocalStorageService {
     private executeChange(items: IUserWord[], func: ChangeExecutionCallback) {
         const transaction = new TransactionSummary();
         transaction.changes = [];
+        if (!items) {
+            return transaction;
+        }
 
         const changeTypes: ChangeType[] = [];
         try {
