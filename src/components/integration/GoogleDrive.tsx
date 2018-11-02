@@ -2,8 +2,9 @@ import * as React from "react";
 import { loadAndInjectJS } from "../../services/DOM";
 import { newFile as newDriveFile, downloadDriveFile } from './GoogleDriveAPI'
 import { UserWordLocalStorageService } from "src/services/WordLocalStorage";
-import { extractUserConfiguration } from "../Settings";
+import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/services/UserConfiguration';
 import { BACKUP_FILE } from "src/constants";
+import { unicodeToBase64 } from "src/services/Encoding";
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = '358710366205-qtbhkrq2ovvhqhsl24h61nmp7luafpjg.apps.googleusercontent.com';
@@ -162,7 +163,8 @@ export class GoogleDrive extends React.Component<IProps, IState> {
             var doc = data[google.picker.Response.DOCUMENTS][0];
             const fileId = doc[google.picker.Document.ID];
             downloadDriveFile(fileId, this.state.oauthToken!, (content) => {
-                console.log(`Read file ${fileId} with content`, content)
+                console.log('content', content);
+                parseAndSyncUserConfiguration(content, this.localConfigStorage);
             });
             this.setState({
                 ...this.state,
@@ -185,7 +187,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         newDriveFile(
             BACKUP_FILE.name,
             BACKUP_FILE.MIME_type,
-            btoa(JSON.stringify(configuration)),
+            unicodeToBase64(JSON.stringify(configuration)),
             (r: any) => {
                 this.setState({
                     ...this.state, file: {
