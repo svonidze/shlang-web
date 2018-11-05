@@ -1,7 +1,7 @@
 # Intro
 
 Web tool to parse and group texts of any languages by words. That might help to get known unknown yet words before consuming any kind of foreign/learning language content either articles, movie subtitles or just text.
-Basic functional is extended with Chrome Extention fetaures such as
+Basic functional is extended with Chrome Extension features such as
 - passing selected on a page text to the parser,
 - passing a whole web page to be parsed.
 

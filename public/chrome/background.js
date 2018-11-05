@@ -40,14 +40,14 @@ function onClickHandler(info, tab) {
     var appName = "shlang";
   
     chrome.contextMenus.create({
-      "id": "selection" + "-" + appName,
-      "title": appName + "'selection' menu item",
+      "id": `selection-${appName}`,
+      "title": `Send text to ${appName}`,
       "contexts": ["selection"]
     });
   
     chrome.contextMenus.create({
-      "id": "page" + "-" + appName,
-      "title": appName + "'page' menu item",
+      "id": `page-${appName}`,
+      "title": `Send page to ${appName}`,
       "contexts": ["page"]
     });
   

@@ -6,10 +6,9 @@ import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/ser
 import { BACKUP_FILE } from "src/constants";
 import { unicodeToBase64 } from "src/services/Encoding";
 
-// Client ID and API key from the Developer Console
+// CLIENT_ID for the web version only, CLIENT_ID for the chrome extentions is hardcoded in manifest.json
 const CLIENT_ID = '358710366205-qtbhkrq2ovvhqhsl24h61nmp7luafpjg.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyCDx1lNwV0JYhYTtDtbqaKCf4r3_7s6JEA';
-
 
 //const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
@@ -43,59 +42,67 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         console.info('ctor');
         super(props);
         this.state = { chromeExtetntion: chrome.identity ? true : false };
+        
         this.localConfigStorage = new UserWordLocalStorageService();
+
+        this.onOpenPicker = this.onOpenPicker.bind(this);
+        this.createAndFillNewFileOnDrive = this.createAndFillNewFileOnDrive.bind(this);
+        this.signIn = this.signIn.bind(this);
+        this.syncPickedFileWithInternalStorage = this.syncPickedFileWithInternalStorage.bind(this);
     }
 
     componentDidMount() {
-        console.log('componentWillMount');
-
-        if (this.state.chromeExtetntion) {
-            chrome.identity.getAuthToken({ interactive: false }, (token) => {
-                console.log('oauthToken from chrome.identity', token);
-                token && this.setState({ ...this.state, oauthToken: token });
-            });
-            return;
-        }
-
         loadAndInjectJS(
             'https://apis.google.com/js/api.js',
             document.body,
             () => {
                 console.info('api.js loaded');
 
-                gapi.load('client:auth2', () => {
-                    console.info('client:auth2 loaded');
+                gapi.load('client', () => {
+                    console.info('client loaded');
+
                     gapi.client.setApiKey(API_KEY);
-                    gapi.auth2.init({
-                        client_id: CLIENT_ID,
-                        scope: SCOPES.join(' '),
-                        //cookie_policy: 'none'
-                    }).then(() => {
-                        if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                            const token = gapi.auth.getToken().access_token;
-                            this.setState({ ...this.state, oauthToken: token });
-                        }
-                    })
+
+                    if (this.state.chromeExtetntion) {
+                        chrome.identity.getAuthToken({ interactive: true }, (token) => {
+                            console.log('oauthToken from chrome.identity', token);
+                            gapi.client.setToken({access_token: token});
+                            token && this.setState({ ...this.state, oauthToken: token });
+                        });
+                    }
+                    else {
+                        gapi.load('auth2', () => {
+                            gapi.auth2.init({
+                                client_id: CLIENT_ID,
+                                scope: SCOPES.join(' '),
+                                //cookie_policy: 'none'
+                            }).then(() => {
+                                if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                                    const token = gapi.auth.getToken().access_token;
+                                    this.setState({ ...this.state, oauthToken: token });
+                                }
+                            })
+                        })
+                    }
                 });
             });
     }
 
     render() {
-        console.info('render');
-
         return (
             <div>
                 <strong>GoogleDrive authorization</strong>
+                <br/>
                 {this.state.file &&
                     <a href={this.state.file.url}>{`${this.state.file.name} (${this.state.file.id})`}</a>
                 }
                 {this.state.oauthToken
                     ?
                     <div>
-                        <button onClick={this.onOpenPicker.bind(this)}>Exisitng file</button>
-                        <button onClick={this.createAndFillNewFileOnDrive.bind(this)}>New file</button>
+                        <button onClick={this.onOpenPicker}>Exisitng file</button>
+                        <button onClick={this.createAndFillNewFileOnDrive}>New file</button>
                     </div>
-                    : <button onClick={() => this.signIn()}>Sign in</button>
+                    : <button onClick={this.signIn}>Sign in</button>
                 }
             </div>);
     }
@@ -129,7 +136,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
                     .addView(google.picker.ViewId.DOCS)
                     .setOAuthToken(this.state.oauthToken)
                     .setDeveloperKey(API_KEY)
-                    .setCallback(this.syncPickedFileWithInternalStorage.bind(this))
+                    .setCallback(this.syncPickedFileWithInternalStorage)
                     .build();
                 picker.setVisible(true);
             }
@@ -152,8 +159,8 @@ export class GoogleDrive extends React.Component<IProps, IState> {
                 // overwrite merged data with the external storage
                 const configuration = extractUserConfiguration(this.localConfigStorage);
                 updateFileOnDrive(
-                    fileId, 
-                    BACKUP_FILE.MIME_type, 
+                    fileId,
+                    BACKUP_FILE.MIME_type,
                     unicodeToBase64(JSON.stringify(configuration)));
             });
             this.setState({

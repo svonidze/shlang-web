@@ -4,12 +4,11 @@ import { Link } from "react-router-dom";
 export default function Header() {
     return (
         <header className="App-header">
-            <label className="App-title">shlang</label>
+            <label className="App-title">
+                <Link to='/'>shlang</Link>
+            </label>
             <nav className="App-header-navigation">
-                <ul>
-                    {/* <li><Link to='/'>Home</Link></li> */}
-                    <li><Link to='/settings'>Settings</Link></li>
-                </ul>
+                <Link to='/settings'>settings</Link>
             </nav>
         </header>
     )

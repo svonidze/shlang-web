@@ -69,15 +69,16 @@ export class Board extends React.Component<IProps & IActionProps, IState> {
                 pressKeyOnWord={this.props.pressKeyOnWord} />;
 
         return (
-            <div>
-                <textarea defaultValue={defaultText} onChange={e => this.text = e.target.value} />
-                <button onClick={() => this.props.parseText(this.text)}>Parse</button>
+            <div className="center">
+                <textarea className="center full-width" rows={10} defaultValue={defaultText} onChange={e => this.text = e.target.value} />
+                <br/>
+                <button className="right" onClick={() => this.props.parseText(this.text)}>Parse</button>
                 {this.props.url &&
                     <section>
                         <a href={this.props.url}>Source page</a>
                     </section>
                 }
-                <div>
+                <div className="center">
                     {createWordBoard('Learned words', false)}
                     {createWordBoard('Words to learn', true)}
                 </div>
