@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "shlang: recognize any text before reading",
   "short_name": "shlang",
-  "version": "0.0.1.5",
+  "version": "0.0.1.6",
   "description": "Tool to group text by words to get known unknown yet words from any kind of content either articles, movie subtitles or just text",
   "oauth2": {
     "client_id": "358710366205-e2oj54gn8drsmc02fc63o8nrtocb7mlm.apps.googleusercontent.com",

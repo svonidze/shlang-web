@@ -2,17 +2,19 @@ import { ConsoleLoggerService as LoggerService } from './ConsoleLogger';
 import { TransactionSummary } from '../models/TransactionSummary';
 import { IUserWord, IWord } from '../models/Word';
 import { ChangeType } from '../models/ChangeType';
+import { LocalStorageWrapper } from './LocalStorageWrapper';
 
 type ChangeExecutionCallback = (word: IUserWord) => ChangeType;
 
-export class UserWordLocalStorageService {
+export class VocabularyLocalStorage {
+    private storage = new LocalStorageWrapper('word');
     private log: LoggerService
     constructor() {
         this.log = new LoggerService();
     }
 
     exist(word: IWord): boolean {
-        const exist = localStorage.getItem(word.value) !== null;
+        const exist = this.storage.getItem(word.value) !== null;
         // this.log.info('word "', word.value, '" exists?', exist);
         return exist;
     }
@@ -35,13 +37,13 @@ export class UserWordLocalStorageService {
             json = JSON.stringify({ repeatNextTimes: word.repeatNextTimes });
         }
         this.log.info('set', json);
-        localStorage.setItem(word.value, json);
+        this.storage.setItem(word.value, json);
     }
 
     get(word: IWord): IUserWord {
         this.log.info('get');
 
-        const json = localStorage.getItem(word.value);
+        const json = this.storage.getItem(word.value);
 
         if (json && json !== 'undefined') {
             const userWord = JSON.parse(json) as IUserWord;
@@ -56,7 +58,7 @@ export class UserWordLocalStorageService {
         this.log.info('remove', word);
         return this.executeChange([word], w => {
             if (this.exist(w)) {
-                localStorage.removeItem(w.value);
+                this.storage.removeItem(w.value);
                 return ChangeType.Deleted;
             }
             return ChangeType.Undefined;
@@ -67,8 +69,8 @@ export class UserWordLocalStorageService {
         this.log.info('getAll');
 
         const words: IUserWord[] = [];
-        Object.keys(localStorage).map(key => {
-            const word: IUserWord = JSON.parse(localStorage.getItem(key) || '{}');
+        this.storage.keys().map(key => {
+            const word: IUserWord = JSON.parse(this.storage.getItem(key) || '{}');
             word.value = key;
             return words.push(word);
         });

@@ -1,3 +1,5 @@
+export const APPLICATION_NAME = 'shlang';
+
 // This const/type pattern allows us to use TypeScript's string literal types in an easily accessible and refactorable way.
 export const TOGGLE_WORD_TO_LEARN = 'TOGGLE_WORD_TO_LEARN';
 export type TOGGLE_WORD_TO_LEARN = typeof TOGGLE_WORD_TO_LEARN;

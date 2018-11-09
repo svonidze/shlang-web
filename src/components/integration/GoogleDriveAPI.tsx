@@ -1,4 +1,4 @@
-import { arrayBufferToString } from "src/services/Encoding";
+import { arrayBufferToString } from 'src/services/Encoding';
 
 const boundary = '-------314159265358979323846';
 const delimiter = "\r\n--" + boundary + "\r\n";

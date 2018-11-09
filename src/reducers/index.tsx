@@ -2,12 +2,12 @@ import { IState } from '../components/Board';
 import { WordAction } from '../actions';
 import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT } from '../constants/index';
 import { parseInput } from '../services/Input'
-import { UserWordLocalStorageService } from '../services/WordLocalStorage';
+import { VocabularyLocalStorage } from '../services/VocabularyLocalStorage';
 import { IParsedWord } from '../models/ParsingResult';
 
 export function word(state: IState, action: WordAction): IState {
     console.info('reducer word', action, state);
-    const wordStorage = new UserWordLocalStorageService();
+    const wordStorage = new VocabularyLocalStorage();
 
     switch (action.type) {
         case TOGGLE_WORD_TO_LEARN: {

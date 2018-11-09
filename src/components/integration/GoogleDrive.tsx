@@ -1,10 +1,11 @@
 import * as React from "react";
 import { loadAndInjectJS } from "../../services/DOM";
 import { createFile as createFileOnDrive, readFile as readFileOnDrive, updateFile as updateFileOnDrive } from './GoogleDriveAPI'
-import { UserWordLocalStorageService } from "src/services/WordLocalStorage";
+import { VocabularyLocalStorage } from "src/services/VocabularyLocalStorage";
 import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/services/UserConfiguration';
 import { BACKUP_FILE } from "src/constants";
 import { unicodeToBase64 } from "src/services/Encoding";
+import { LocalStorageWrapper } from "src/services/LocalStorageWrapper";
 
 // CLIENT_ID for the web version only, CLIENT_ID for the chrome extentions is hardcoded in manifest.json
 const CLIENT_ID = '358710366205-qtbhkrq2ovvhqhsl24h61nmp7luafpjg.apps.googleusercontent.com';
@@ -28,27 +29,41 @@ interface IProps {
 interface IState {
     chromeExtetntion: boolean,
     oauthToken?: string,
-    file?: {
-        id: string,
-        name: string,
-        url: string
-    };
+    file?: IFileConfig
+}
+
+interface IFileConfig {
+    id: string,
+    name: string,
+    url: string
 }
 
 export class GoogleDrive extends React.Component<IProps, IState> {
-    localConfigStorage: UserWordLocalStorageService;
+    vocabularyStorage: VocabularyLocalStorage;
+    configStore: LocalStorageWrapper;
 
     constructor(props: IProps) {
         console.info('ctor');
         super(props);
-        this.state = { chromeExtetntion: chrome.identity ? true : false };
-        
-        this.localConfigStorage = new UserWordLocalStorageService();
 
         this.onOpenPicker = this.onOpenPicker.bind(this);
         this.createAndFillNewFileOnDrive = this.createAndFillNewFileOnDrive.bind(this);
         this.signIn = this.signIn.bind(this);
         this.syncPickedFileWithInternalStorage = this.syncPickedFileWithInternalStorage.bind(this);
+
+        this.vocabularyStorage = new VocabularyLocalStorage();
+        this.configStore = new LocalStorageWrapper('config');
+
+
+        const configFileJson = this.configStore.getItem('file');
+        let configFile = configFileJson 
+            ? JSON.parse(configFileJson) 
+            : undefined;
+
+        this.state = {
+            chromeExtetntion: chrome.identity ? true : false,
+            file: configFile
+        };
     }
 
     componentDidMount() {
@@ -66,7 +81,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
                     if (this.state.chromeExtetntion) {
                         chrome.identity.getAuthToken({ interactive: true }, (token) => {
                             console.log('oauthToken from chrome.identity', token);
-                            gapi.client.setToken({access_token: token});
+                            gapi.client.setToken({ access_token: token });
                             token && this.setState({ ...this.state, oauthToken: token });
                         });
                     }
@@ -92,7 +107,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         return (
             <div>
                 <strong>GoogleDrive authorization</strong>
-                <br/>
+                <br />
                 {this.state.file &&
                     <a href={this.state.file.url}>{`${this.state.file.name} (${this.state.file.id})`}</a>
                 }
@@ -134,6 +149,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
             if (this.state.oauthToken) {
                 const picker = new google.picker.PickerBuilder()
                     .addView(google.picker.ViewId.DOCS)
+                    .addView(new google.picker.DocsView())
                     .setOAuthToken(this.state.oauthToken)
                     .setDeveloperKey(API_KEY)
                     .setCallback(this.syncPickedFileWithInternalStorage)
@@ -153,23 +169,25 @@ export class GoogleDrive extends React.Component<IProps, IState> {
             const fileId = doc[google.picker.Document.ID];
             readFileOnDrive(fileId, this.state.oauthToken!, (content) => {
                 console.log('content', content);
-                // merge with the internal storage
-                parseAndSyncUserConfiguration(content, this.localConfigStorage);
+                parseAndSyncUserConfiguration(content, this.vocabularyStorage);
 
                 // overwrite merged data with the external storage
-                const configuration = extractUserConfiguration(this.localConfigStorage);
+                const configuration = extractUserConfiguration(this.vocabularyStorage);
                 updateFileOnDrive(
                     fileId,
                     BACKUP_FILE.MIME_type,
                     unicodeToBase64(JSON.stringify(configuration)));
             });
+
+            const configFile = {
+                id: fileId,
+                name: doc[google.picker.Document.NAME],
+                url: doc[google.picker.Document.URL]
+            };
+            this.configStore.setItem('file', JSON.stringify(configFile));
             this.setState({
                 ...this.state,
-                file: {
-                    id: fileId,
-                    name: doc[google.picker.Document.NAME],
-                    url: doc[google.picker.Document.URL]
-                }
+                file: configFile
             });
             console.info('You picked: ' + doc[google.picker.Document.URL], doc);
         }
@@ -179,7 +197,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
     }
 
     createAndFillNewFileOnDrive() {
-        const configuration = extractUserConfiguration(this.localConfigStorage);
+        const configuration = extractUserConfiguration(this.vocabularyStorage);
 
         createFileOnDrive(
             BACKUP_FILE.name,

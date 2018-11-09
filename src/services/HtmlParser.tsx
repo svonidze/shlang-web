@@ -1,5 +1,10 @@
-export function extractTextFromHtml(html: string): string {
-    const doc = (new DOMParser).parseFromString(html, 'text/html').documentElement;
+export function extractTextFromHtml(html: string): string | undefined {
+    const doc = new DOMParser().parseFromString(html, 'text/html').documentElement;
+
+    if(!doc){
+        console.warn('The following HTML could not parsed', html)
+        return undefined;
+    }
 
     const elements = doc.querySelectorAll('style, script');
 
