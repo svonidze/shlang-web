@@ -6,6 +6,7 @@ import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/ser
 import { BACKUP_FILE } from "src/constants";
 import { unicodeToBase64 } from "src/services/Encoding";
 import { LocalStorageWrapper } from "src/services/LocalStorageWrapper";
+import { isObjectEmpty } from "src/extentions/Object";
 
 // CLIENT_ID for the web version only, CLIENT_ID for the chrome extentions is hardcoded in manifest.json
 const CLIENT_ID = '358710366205-qtbhkrq2ovvhqhsl24h61nmp7luafpjg.apps.googleusercontent.com';
@@ -29,10 +30,10 @@ interface IProps {
 interface IState {
     chromeExtetntion: boolean,
     oauthToken?: string,
-    file?: IFileConfig
+    file?: IDriveFile
 }
 
-interface IFileConfig {
+interface IDriveFile {
     id: string,
     name: string,
     url: string
@@ -50,14 +51,16 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         this.createAndFillNewFileOnDrive = this.createAndFillNewFileOnDrive.bind(this);
         this.signIn = this.signIn.bind(this);
         this.syncPickedFileWithInternalStorage = this.syncPickedFileWithInternalStorage.bind(this);
+        this.forceVocabluraryFileSync = this.forceVocabluraryFileSync.bind(this);
+        this.detachDriveFile = this.detachDriveFile.bind(this);
 
         this.vocabularyStorage = new VocabularyLocalStorage();
         this.configStore = new LocalStorageWrapper('config');
 
 
         const configFileJson = this.configStore.getItem('file');
-        let configFile = configFileJson 
-            ? JSON.parse(configFileJson) 
+        let configFile = configFileJson
+            ? JSON.parse(configFileJson)
             : undefined;
 
         this.state = {
@@ -104,18 +107,37 @@ export class GoogleDrive extends React.Component<IProps, IState> {
     }
 
     render() {
+        // isObjectEmpty is used beacuse of a bug in TS `Type '{}' is not assignable to type 'IntrinsicAttributes' https://github.com/Microsoft/TypeScript/issues/15463 and https://github.com/Microsoft/TypeScript/issues/21417
+
+        const FileInfo = (file: IDriveFile) =>
+            <a href={file.url}>
+                {`${file.name} (${file.id})`}
+            </a>;
+        const SyncFileButton = (file: IDriveFile | undefined) =>
+            <button
+                disabled={isObjectEmpty(file)}
+                onClick={() => this.forceVocabluraryFileSync(file!.id)}>
+                Force sync
+            </button>;
+
+        const DetachFileButton = (file: IDriveFile | undefined) =>
+            <button
+                disabled={isObjectEmpty(file)}
+                onClick={this.detachDriveFile}>
+                Detach file
+            </button>;
         return (
             <div>
                 <strong>GoogleDrive authorization</strong>
                 <br />
-                {this.state.file &&
-                    <a href={this.state.file.url}>{`${this.state.file.name} (${this.state.file.id})`}</a>
-                }
+                {this.state.file && <FileInfo {...this.state.file} />}
                 {this.state.oauthToken
                     ?
                     <div>
+                        <SyncFileButton {...this.state.file!} />
                         <button onClick={this.onOpenPicker}>Exisitng file</button>
                         <button onClick={this.createAndFillNewFileOnDrive}>New file</button>
+                        <DetachFileButton {...this.state.file!} />
                     </div>
                     : <button onClick={this.signIn}>Sign in</button>
                 }
@@ -166,30 +188,16 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         const action = data[google.picker.Response.ACTION];
         if (action == google.picker.Action.PICKED) {
             var doc = data[google.picker.Response.DOCUMENTS][0];
-            const fileId = doc[google.picker.Document.ID];
-            readFileOnDrive(fileId, this.state.oauthToken!, (content) => {
-                console.log('content', content);
-                parseAndSyncUserConfiguration(content, this.vocabularyStorage);
 
-                // overwrite merged data with the external storage
-                const configuration = extractUserConfiguration(this.vocabularyStorage);
-                updateFileOnDrive(
-                    fileId,
-                    BACKUP_FILE.MIME_type,
-                    unicodeToBase64(JSON.stringify(configuration)));
-            });
-
-            const configFile = {
-                id: fileId,
+            const driveFile: IDriveFile = {
+                id: doc[google.picker.Document.ID],
                 name: doc[google.picker.Document.NAME],
                 url: doc[google.picker.Document.URL]
             };
-            this.configStore.setItem('file', JSON.stringify(configFile));
-            this.setState({
-                ...this.state,
-                file: configFile
-            });
-            console.info('You picked: ' + doc[google.picker.Document.URL], doc);
+            console.info('You picked: ' + driveFile.url, doc);
+
+            this.forceVocabluraryFileSync(driveFile.id);
+            this.updateStateWith(driveFile);
         }
         else {
             console.warn('Action not hanlded', action, data)
@@ -204,14 +212,51 @@ export class GoogleDrive extends React.Component<IProps, IState> {
             BACKUP_FILE.MIME_type,
             unicodeToBase64(JSON.stringify(configuration)),
             (r: any) => {
-                this.setState({
-                    ...this.state, file: {
-                        id: r.id,
-                        name: r.title,
-                        url: r.defaultOpenWithLink
-                    }
+                this.updateStateWith({
+                    id: r.id,
+                    name: r.title,
+                    url: r.defaultOpenWithLink
                 });
             }
         );
     }
+
+    forceVocabluraryFileSync(fileId: string): void {
+        if (!fileId) {
+            console.error('fileId not provided to finish sync');
+            return;
+        }
+        readFileOnDrive(fileId, this.state.oauthToken!, (content) => {
+            console.log('readFileOnDrive', content);
+            parseAndSyncUserConfiguration(content, this.vocabularyStorage);
+
+            // overwrite merged data with the external storage
+            const configuration = extractUserConfiguration(this.vocabularyStorage);
+            updateFileOnDrive(
+                fileId!,
+                BACKUP_FILE.MIME_type,
+                unicodeToBase64(JSON.stringify(configuration)));
+        });
+    }
+
+    private detachDriveFile() {
+        this.updateStateWith(undefined);
+    }
+
+    private updateStateWith(configFile: IDriveFile | undefined) {
+        if (configFile) {
+            this.configStore.setItem('file', JSON.stringify(configFile));
+
+        }
+        else {
+            this.configStore.removeItem('file');
+        }
+
+        this.setState({
+            ...this.state,
+            file: configFile
+        });
+
+    }
+
 }
