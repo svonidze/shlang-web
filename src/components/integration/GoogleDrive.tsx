@@ -107,22 +107,20 @@ export class GoogleDrive extends React.Component<IProps, IState> {
     }
 
     render() {
-        // isObjectEmpty is used beacuse of a bug in TS `Type '{}' is not assignable to type 'IntrinsicAttributes' https://github.com/Microsoft/TypeScript/issues/15463 and https://github.com/Microsoft/TypeScript/issues/21417
-
-        const FileInfo = (file: IDriveFile) =>
+         const FileInfo = (file: IDriveFile) =>
             <a href={file.url}>
                 {`${file.name} (${file.id})`}
             </a>;
         const SyncFileButton = (file: IDriveFile | undefined) =>
             <button
-                disabled={isObjectEmpty(file)}
+                disabled={!file}
                 onClick={() => this.forceVocabluraryFileSync(file!.id)}>
                 Force sync
             </button>;
 
         const DetachFileButton = (file: IDriveFile | undefined) =>
             <button
-                disabled={isObjectEmpty(file)}
+                disabled={!file}
                 onClick={this.detachDriveFile}>
                 Detach file
             </button>;
@@ -134,10 +132,10 @@ export class GoogleDrive extends React.Component<IProps, IState> {
                 {this.state.oauthToken
                     ?
                     <div>
-                        <SyncFileButton {...this.state.file!} />
+                        {SyncFileButton(this.state.file)}
                         <button onClick={this.onOpenPicker}>Exisitng file</button>
                         <button onClick={this.createAndFillNewFileOnDrive}>New file</button>
-                        <DetachFileButton {...this.state.file!} />
+                        {DetachFileButton(this.state.file)}
                     </div>
                     : <button onClick={this.signIn}>Sign in</button>
                 }

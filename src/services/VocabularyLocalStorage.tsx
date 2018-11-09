@@ -20,7 +20,7 @@ export class VocabularyLocalStorage {
     }
 
     addOrUpdate(word: IUserWord): TransactionSummary {
-        this.log.info('addOrUpdate', word);
+        //this.log.info('addOrUpdate', word);
         return this.executeChange([word], w => this.upsert(w));
     }
 
@@ -36,12 +36,12 @@ export class VocabularyLocalStorage {
         if (word.repeatNextTimes && word.repeatNextTimes > 0) {
             json = JSON.stringify({ repeatNextTimes: word.repeatNextTimes });
         }
-        this.log.info('set', json);
+        //this.log.info('set', json);
         this.storage.setItem(word.value, json);
     }
 
     get(word: IWord): IUserWord {
-        this.log.info('get');
+        //this.log.info('get');
 
         const json = this.storage.getItem(word.value);
 

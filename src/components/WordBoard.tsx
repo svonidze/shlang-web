@@ -12,6 +12,7 @@ export interface IProps {
     title: string;
     words: IParsedWord[];
     collapsed: boolean;
+    focused: boolean;
 }
 
 export interface IActionProps {
@@ -33,14 +34,14 @@ export class WordBoard extends React.Component<IProps & IActionProps, IState> {
                 <label>{this.props.title} {this.props.words && this.props.words.length}</label>
                 {
                     !this.state.collapsed
-                    && this.props
-                    && this.props.words
+                    && this.props.words!
                     && this.props.words.map((w, index) => {
                         return (
                             <Word key={index}
+                                focused={this.props.focused && index === 0}
                                 word={w}
-                                onToggleToLearn={() => this.props.toggleWordToLearn(w)}
-                                onKey={(e) => this.props.pressKeyOnWord(w, e)} />
+                                onToggleWordToLearn={() => this.props.toggleWordToLearn(w)}
+                                onPressKeyOnWord={(e) => this.props.pressKeyOnWord(w, e)} />
                         )
                     })
                 }

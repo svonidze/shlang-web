@@ -3,31 +3,41 @@ import { IParsedWord } from "../models/ParsingResult";
 
 export interface IProps {
     word: IParsedWord;
+    focused?: boolean;
 }
 
 export interface IActionProps {
-    onToggleToLearn?: () => void;
-    onKey?: (event: React.KeyboardEvent) => void;
+    onToggleWordToLearn?: () => void;
+    onPressKeyOnWord: (event: React.KeyboardEvent) => void;
 }
 
 export function Word(props: IProps & IActionProps) {
-    //console.log('Word', props);
-    let w = props.word;
+    let { word, focused } = props;
 
-    return (
-        <div>
-            <input type="checkbox" checked={!w.toLearn} onChange={props.onToggleToLearn} onKeyUp={props.onKey} />
-            <label>{w.count} </label>
-            {
-                w.editable
-                    ? <input type="text" value={w.value} onKeyUp={props.onKey} />
-                    : <label>{w.value}</label>
-            }
-            {
-                w.repeatNextTimes > 0
-                    ? <label> REPEAT {w.repeatNextTimes} TIMES</label>
-                    : null
-            }
-        </div>
-    );
+    if (!word) {
+        return <label>NO WORD</label>;
+    }
+
+    const checkbox = <input
+        type="checkbox"
+        autoFocus={focused}
+        checked={!word.toLearn}
+        onChange={props.onToggleWordToLearn} />;
+
+    const textValue = word.editable
+        ? <input type="text"
+            value={word.value}
+            onKeyUp={props.onPressKeyOnWord} />
+        : <label>{word.value}</label>;
+        
+    const repeatNextTimes = word.repeatNextTimes > 0
+        ? <label> REPEAT {word.repeatNextTimes} TIMES</label>
+        : null;
+
+    return <div onKeyUp={props.onPressKeyOnWord}>
+        {checkbox}
+        <label>{word.count} </label>
+        {textValue}
+        {repeatNextTimes}
+    </div>;
 }
