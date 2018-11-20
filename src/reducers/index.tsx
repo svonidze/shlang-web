@@ -47,7 +47,7 @@ export function word(state: IState, action: WordAction): IState {
                 case Key.Enter: {
                     word.editable = !word.editable;
                     let words = replaceOldWithNewWord(state.words, word);
-                    return { words: words };
+                    return { ...state, words: words };
                 }
                 case Key.Numpad8:
                 case Key.UpArrow: {
@@ -60,7 +60,7 @@ export function word(state: IState, action: WordAction): IState {
                     wordStorage.addOrUpdate(word);
 
                     let words = replaceOldWithNewWord(state.words, word);
-                    return { words: words };
+                    return { ...state, words: words };
                 }
                 case Key.Numpad2:
                 case Key.DownArrow: {
@@ -77,7 +77,6 @@ export function word(state: IState, action: WordAction): IState {
                 default: {
                     console.warn(`Key ${keyCode} not supported`);
                 }
-
             }
             return state;
         }
@@ -90,11 +89,10 @@ export function word(state: IState, action: WordAction): IState {
         case DISCOVER_NEXT_WORD: {
             return discoverNextWord(action.nextIndex);
         }
-        default:
-            {
-                console.warn('Action is not handled', action, state);
-                return state;
-            }
+        default: {
+            console.warn('Action is not handled', action, state);
+            return state;
+        }
     }
 
     function discoverNextWord(nextIndex: number) {
