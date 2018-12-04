@@ -1,6 +1,7 @@
+import thunkMiddleware from 'redux-thunk'
 import * as React from 'react';
 import { Switch, Route, BrowserRouter } from 'react-router-dom'
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 
 import './App.css';
@@ -12,15 +13,21 @@ import Board from './containers/Board';
 import Settings from './components/Settings';
 import Header from './components/Header';
 import { IParsingResult } from './models/ParsingResult';
+import { Translations } from './models/Translation';
 
 export interface IState extends IParsingResult {
   wordDiscoveryRunning?: boolean;
   currentWordIndex?: number;
+
+  // langFrom: string;
+  // langTo: string;
+  translations?: Translations;
 }
 
-const store = createStore<IState, actions.WordAction, any, any>(wordReducer, {
-  words: []
-});
+const store = createStore<IState, actions.WordAction, any, any>(
+  wordReducer,
+  { words: [] },
+  applyMiddleware(thunkMiddleware));
 
 const Main = () => (
   <Switch>

@@ -35,18 +35,20 @@ export function WordDiscovery(props: IProps & IActionProps) {
         </div>
         <div className="center">
 
-            <div className="center">
-                <Word focused={true} word={current.word} />
-            </div>
+            <table className="center">
+                <tbody>
+                    <Word focused={true} word={current.word} />
+                </tbody>
+            </table>
 
             <div >
-                <button className="left" 
-                    disabled={!prev.word} 
+                <button className="left"
+                    disabled={!prev.word}
                     onClick={() => props.goNextWord(prev.index)}>
                     {prev.word ? prev.word.value : 'start'}
                 </button>
-                <button className="right" 
-                    disabled={!next.word} 
+                <button className="right"
+                    disabled={!next.word}
                     onClick={() => props.goNextWord(next.index)}>
                     {next.word ? next.word.value : 'end'}
                 </button>

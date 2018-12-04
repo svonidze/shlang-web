@@ -2,10 +2,11 @@ import { Key } from 'ts-keycode-enum';
 
 import { IState } from 'src/App';
 import { WordAction } from '../actions';
-import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD, MARK_WORD_TO_REPEAT } from '../constants/index';
+import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD, MARK_WORD_TO_REPEAT, SET_TRANSLATION_TO_WORD } from '../constants/index';
 import { parseInput } from '../services/Input'
 import { VocabularyLocalStorage } from '../services/VocabularyLocalStorage';
 import { IParsedWord } from '../models/ParsingResult';
+import { Translations } from 'src/models/Translation';
 
 export function word(state: IState, action: WordAction): IState {
     console.info('reducer word', action, state);
@@ -17,6 +18,14 @@ export function word(state: IState, action: WordAction): IState {
         }
         case MARK_WORD_TO_REPEAT: {
             return markWordToRepeat(action.word);
+        }
+        case SET_TRANSLATION_TO_WORD: {
+            let translations = new Translations(state.translations);
+
+            translations.delete(action.translation.originalWord);
+            translations.set(action.translation.originalWord, { ...action.translation });
+
+            return { ...state, translations: translations };
         }
         case PARSE_TEXT: {
             const parsingResult = parseInput(action.text, { ignoreOneLetterWords: true });
@@ -81,7 +90,6 @@ export function word(state: IState, action: WordAction): IState {
             return { ...state, wordDiscoveryRunning: false };
         }
         case DISCOVER_NEXT_WORD: {
-            console.log("reducer", DISCOVER_NEXT_WORD, action.nextIndex)
             return discoverNextWord(action.nextIndex);
         }
         default: {
@@ -111,7 +119,7 @@ export function word(state: IState, action: WordAction): IState {
         let words = replaceOldWithNewWord(state.words, word);
         return { ...state, words: words };
     }
-    
+
     function toggleWordToLearn(sourceWord: IParsedWord) {
         let word = { ...sourceWord };
         if (word.toLearn) {
@@ -124,7 +132,7 @@ export function word(state: IState, action: WordAction): IState {
         let words = replaceOldWithNewWord(state.words, word);
         return { ...state, words: words };
     }
-    
+
 }
 function replaceOldWithNewWord(source: IParsedWord[], word: IParsedWord) {
     let words = source.filter(w => w.value !== word.value);

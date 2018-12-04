@@ -29,14 +29,18 @@ export class WordBoard extends React.Component<IProps & IActionProps, IState> {
             <div>
                 <button onClick={() => this.setState({ collapsed: !this.state.collapsed })}>^</button>
                 <label>{this.props.title} {this.props.words && this.props.words.length}</label>
-                {
-                    !this.state.collapsed
-                    && this.props.words!
-                    && this.props.words.map((w, index) => 
-                        <Word key={index} word={w}
-                            focused={this.props.focused && index === 0} />)
+                <table>
+                    <tbody>
+                        {
+                            !this.state.collapsed
+                            && this.props.words!
+                            && this.props.words.map((w, index) =>
+                                <Word key={index} word={w}
+                                    focused={this.props.focused && index === 0} />)
 
-                }
+                        }
+                    </tbody>
+                </table>
             </div>
         );
     }

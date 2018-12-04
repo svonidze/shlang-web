@@ -1,5 +1,6 @@
 import * as constants from '../constants'
 import { IParsedWord } from '../models/ParsingResult';
+import { ITranslation } from 'src/models/Translation';
 
 export interface MarkWordToLearn {
     type: constants.TOGGLE_WORD_TO_LEARN,
@@ -20,6 +21,11 @@ export interface PressKeyOnWord {
     type: constants.PRESS_KEY_ON_WORD,
     word: IParsedWord,
     event: React.KeyboardEvent
+}
+
+export interface SetTranslationToWord {
+    type: constants.SET_TRANSLATION_TO_WORD,
+    translation: ITranslation;
 }
 
 export interface ParseText {
@@ -44,6 +50,7 @@ export type WordAction =
       MarkWordToLearn 
     | MarkWordToRepeat
     | MarkWordAsIncorect
+    | SetTranslationToWord
     | PressKeyOnWord 
     | ParseText 
     | StartWordDiscovery 
@@ -77,6 +84,13 @@ export function pressKeyOnWord(word: IParsedWord, event: React.KeyboardEvent): P
         type: constants.PRESS_KEY_ON_WORD,
         word: word,
         event: event
+    }
+}
+
+export function setTranslationToWord(translation: ITranslation): SetTranslationToWord {
+    return {
+        type: constants.SET_TRANSLATION_TO_WORD,
+        translation: translation
     }
 }
 
