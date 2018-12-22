@@ -1,34 +1,19 @@
 import * as React from "react";
 
-import { IWord } from '../models/Word';
-import { WordBoard } from '../components/WordBoard';
-import { IParsingResult, IParsingContext, IParsedWord } from "../models/ParsingResult";
-import { WordDiscovery } from "./WordDiscovery";
+import { IState as IAppState } from 'src/App';
+import { IParsingContext, IParsedWord } from "../models/ParsingResult";
 import { isNullOrUndefined } from "util";
 
-export interface IState extends IParsingResult {
-    wordDiscoveryRunning?: boolean;
-    currentWordIndex?: number;
-}
+import WordBoard from "src/containers/WordBoard";
+import WordDiscovery from "src/containers/WordDiscovery";
 
-export interface IProps extends IState {
+export interface IProps extends IAppState { }
 
-}
-
-export interface IOwnProps extends IParsingContext {
-}
+export interface IOwnProps extends IParsingContext { }
 
 export interface IActionProps {
     parseText: (text: string) => void;
-
-    onToggleToLearn: (word: IWord) => void;
-    onMarkWordToRepeat: (word: IWord) => void;
-    onMarkWordAsIncorect: (word: IWord) => void;
-    onPressKeyOn: (word: IParsedWord, event: React.KeyboardEvent) => void;
-
-    onDiscoverNextWord: (nextIndex: number) => void;
     startWordDiscovery: () => void;
-    stopWordDiscovery: () => void;
 }
 
 export class Board extends React.Component<IProps & IActionProps> {
@@ -41,6 +26,7 @@ export class Board extends React.Component<IProps & IActionProps> {
     public render() {
         console.log('Board render', this.props);
 
+        const { currentWordIndex } = this.props;
         let defaultText: string = '';
 
         if (!this.text) {
@@ -59,45 +45,28 @@ export class Board extends React.Component<IProps & IActionProps> {
         const filterWords = (toLearn: boolean) =>
             this.props.words.filter(w => w.toLearn === toLearn);
 
-        const sortWords = (toLearn: boolean) =>
-            filterWords(toLearn)
+        const sortWords = (_: { toLearn: boolean }) =>
+            filterWords(_.toLearn)
                 .sort((a, b) =>
                     compare(b, a, x => x.count)
                     || compare(a, b, x => x.value));
 
-        const unkownWords = sortWords(true);
+        const unkownWords = sortWords({ toLearn: true });
 
         if (this.props.wordDiscoveryRunning) {
-            if (isNullOrUndefined(this.props.currentWordIndex)) {
+            if (isNullOrUndefined(currentWordIndex)) {
                 throw new Error('currentWordIndex is not specified');
             }
 
-            const index = this.props.currentWordIndex;
-            const word = unkownWords[index];
+            const getWord = (i: number): { word: IParsedWord, index: number } =>
+                ({ word: unkownWords[i], index: i });
             return <WordDiscovery
                 totalWordNumber={unkownWords.length}
-                currentWord={word}
-                nextWord={unkownWords[index + 1]}
-                prevWord={unkownWords[index - 1]}
-                onExit={this.props.stopWordDiscovery}
-                onNextWord={() => this.props.onDiscoverNextWord(index + 1)}
-                onPrevWord={() => this.props.onDiscoverNextWord(index - 1)}
-                onPressKeyOnWord={e => this.props.onPressKeyOn(word, e)}
-                onToggleWordToLearn={() => this.props.onToggleToLearn(word)}
-                onMarkWordToRepeat={() => this.props.onMarkWordToRepeat(word)}
-                onMarkWordAsIncorect={() => this.props.onMarkWordAsIncorect(word)}
-            >
-            </WordDiscovery>;
+                current={getWord(currentWordIndex)}
+                next={getWord(currentWordIndex + 1)}
+                prev={getWord(currentWordIndex - 1)} />;
         }
 
-        const newWordBoard = (_: { title: string, toLearn: boolean, focused: boolean }) =>
-            <WordBoard
-                title={_.title}
-                focused={_.focused}
-                words={_.toLearn ? unkownWords : sortWords(_.toLearn)}
-                collapsed={!_.toLearn}
-                toggleWordToLearn={this.props.onToggleToLearn}
-                pressKeyOnWord={this.props.onPressKeyOn} />;
         const DiscoverNewWordsButton = () =>
             <button
                 disabled={unkownWords.length == 0}
@@ -119,14 +88,16 @@ export class Board extends React.Component<IProps & IActionProps> {
                 </section>
             }
             <div className="center">
-                {newWordBoard({ 
-                    title: 'Learned words', 
-                    toLearn: false, 
-                    focused: false })}
-                {newWordBoard({
-                    title: 'Words to learn', 
-                    toLearn: true, 
-                    focused: true })}
+                <WordBoard
+                    title='Learned words'
+                    focused={false}
+                    collapsed={true}
+                    words={sortWords({ toLearn: false })} />
+                <WordBoard
+                    title='Words to learn'
+                    focused={true}
+                    collapsed={false}
+                    words={unkownWords} />
             </div>
         </div>;
     }

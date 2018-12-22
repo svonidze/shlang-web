@@ -7,10 +7,16 @@ import './App.css';
 
 import * as actions from './actions/';
 import { word as wordReducer } from './reducers/index';
-import { IState, IOwnProps } from './components/Board';
+import { IOwnProps } from './components/Board';
 import Board from './containers/Board';
 import Settings from './components/Settings';
 import Header from './components/Header';
+import { IParsingResult } from './models/ParsingResult';
+
+export interface IState extends IParsingResult {
+  wordDiscoveryRunning?: boolean;
+  currentWordIndex?: number;
+}
 
 const store = createStore<IState, actions.WordAction, any, any>(wordReducer, {
   words: []

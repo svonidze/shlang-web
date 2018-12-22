@@ -1,50 +1,56 @@
 import * as React from "react";
 import { IParsedWord } from 'src/models/ParsingResult';
-import { IActionProps, Word } from "./Word";
+import Word from "src/containers/Word";
 
 export interface IProps {
-    nextWord: IParsedWord | undefined;
-    currentWord: IParsedWord;
-    prevWord: IParsedWord | undefined;
+    next: { word: IParsedWord | undefined, index: number };
+    current: { word: IParsedWord, index: number };
+    prev: { word: IParsedWord | undefined, index: number };
     totalWordNumber: number;
+}
 
-    onNextWord: () => void;
-    onPrevWord: () => void;
+export interface IActionProps {
+    goNextWord: (index: number) => void;
 
-    onToggleWordToLearn: () => void;
-    onMarkWordToRepeat: () => void;
-    onMarkWordAsIncorect: () => void;
+    toggleWordToLearn: () => void;
+    markWordToRepeat: () => void;
+    markWordAsIncorect: () => void;
 
-    onExit: () => void;
+    exit: () => void;
 }
 
 export function WordDiscovery(props: IProps & IActionProps) {
-    const { prevWord, currentWord, nextWord } = props;
-    
+    const { prev, current: current, next: next } = props;
+
     return <div className="center">
+        <div className="center">
+            <label className="center">{current.index + 1}/{props.totalWordNumber}</label>
+        </div>
         <div>
-            <button className="right" onClick={() => { props.onExit(); }}>Exit</button>
+            <button className="right" onClick={() => { props.exit(); }}>Exit</button>
             <div className="center" >
-                <button className="center" onClick={props.onMarkWordAsIncorect}>Mark as Incorect</button>
-                <button className="center" onClick={props.onMarkWordToRepeat}>To Repeat</button>
+                <button className="center" onClick={props.markWordAsIncorect}>Mark as Incorect</button>
+                <button className="center" onClick={props.markWordToRepeat}>To Repeat</button>
             </div>
         </div>
         <div className="center">
-            <h6 className="center">{prevWord ? prevWord.value : 'start'}</h6>
 
             <div className="center">
-                <Word
-                    focused={true}
-                    onPressKeyOnWord={props.onPressKeyOnWord}
-                    onToggleWordToLearn={props.onToggleWordToLearn}
-                    word={currentWord}>
-                </Word>
+                <Word focused={true} word={current.word} />
             </div>
 
-            <button className="left" disabled={!prevWord} onClick={props.onPrevWord}>Prev</button>
-            <button className="right" disabled={!nextWord} onClick={props.onNextWord}>Next</button>
-
-            <h5 className="center">{nextWord ? nextWord.value : 'end'}</h5>
+            <div >
+                <button className="left" 
+                    disabled={!prev.word} 
+                    onClick={() => props.goNextWord(prev.index)}>
+                    {prev.word ? prev.word.value : 'start'}
+                </button>
+                <button className="right" 
+                    disabled={!next.word} 
+                    onClick={() => props.goNextWord(next.index)}>
+                    {next.word ? next.word.value : 'end'}
+                </button>
+            </div>
         </div>
 
     </div>;

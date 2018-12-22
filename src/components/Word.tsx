@@ -7,8 +7,8 @@ export interface IProps {
 }
 
 export interface IActionProps {
-    onToggleWordToLearn?: () => void;
-    onPressKeyOnWord: (event: React.KeyboardEvent) => void;
+    toggleWordToLearn: (word: IParsedWord) => void;
+    pressKeyOnWord: (word: IParsedWord, event: React.KeyboardEvent) => void;
 }
 
 export function Word(props: IProps & IActionProps) {
@@ -22,19 +22,19 @@ export function Word(props: IProps & IActionProps) {
         type="checkbox"
         autoFocus={focused}
         checked={!word.toLearn}
-        onChange={props.onToggleWordToLearn} />;
+        onChange={() => props.toggleWordToLearn(word)} />;
 
     const textValue = word.editable
         ? <input type="text"
             value={word.value}
-            onKeyUp={props.onPressKeyOnWord} />
+            onKeyUp={e => props.pressKeyOnWord(word, e)} />
         : <label>{word.value}</label>;
         
     const repeatNextTimes = word.repeatNextTimes > 0
         ? <label> REPEAT {word.repeatNextTimes} TIMES</label>
         : null;
 
-    return <div onKeyUp={props.onPressKeyOnWord}>
+    return <div onKeyUp={e => props.pressKeyOnWord(word, e)}>
         {checkbox}
         <label>{word.count} </label>
         {textValue}

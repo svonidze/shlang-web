@@ -58,14 +58,14 @@ export function toggleWordToLearn(word: IParsedWord): MarkWordToLearn {
     }
 }
 
-export function onMarkWordToRepeat(word: IParsedWord): MarkWordToRepeat {
+export function markWordToRepeat(word: IParsedWord): MarkWordToRepeat {
     return {
         type: constants.MARK_WORD_TO_REPEAT,
         word: word
     }
 }
 
-export function onMarkWordAsIncorect(word: IParsedWord): MarkWordAsIncorect {
+export function markWordAsIncorect(word: IParsedWord): MarkWordAsIncorect {
     return {
         type: constants.MARK_WORD_AS_INCORECT,
         word: word

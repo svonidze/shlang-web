@@ -1,8 +1,8 @@
 import { Key } from 'ts-keycode-enum';
 
-import { IState } from '../components/Board';
+import { IState } from 'src/App';
 import { WordAction } from '../actions';
-import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD } from '../constants/index';
+import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD, MARK_WORD_TO_REPEAT } from '../constants/index';
 import { parseInput } from '../services/Input'
 import { VocabularyLocalStorage } from '../services/VocabularyLocalStorage';
 import { IParsedWord } from '../models/ParsingResult';
@@ -13,7 +13,10 @@ export function word(state: IState, action: WordAction): IState {
 
     switch (action.type) {
         case TOGGLE_WORD_TO_LEARN: {
-            return toggleWordToLearn(action.word, wordStorage, state);
+            return toggleWordToLearn(action.word);
+        }
+        case MARK_WORD_TO_REPEAT: {
+            return markWordToRepeat(action.word);
         }
         case PARSE_TEXT: {
             const parsingResult = parseInput(action.text, { ignoreOneLetterWords: true });
@@ -51,20 +54,11 @@ export function word(state: IState, action: WordAction): IState {
                 }
                 case Key.Numpad8:
                 case Key.UpArrow: {
-                    word.toLearn = false;
-
-                    if (!word.repeatNextTimes) {
-                        word.repeatNextTimes = 0;
-                    }
-                    word.repeatNextTimes += 5;
-                    wordStorage.addOrUpdate(word);
-
-                    let words = replaceOldWithNewWord(state.words, word);
-                    return { ...state, words: words };
+                    return markWordToRepeat(word);
                 }
                 case Key.Numpad2:
                 case Key.DownArrow: {
-                    return toggleWordToLearn(action.word, wordStorage, state);
+                    return toggleWordToLearn(action.word);
                 }
                 case Key.Numpad6:
                 case Key.RightArrow: {
@@ -87,6 +81,7 @@ export function word(state: IState, action: WordAction): IState {
             return { ...state, wordDiscoveryRunning: false };
         }
         case DISCOVER_NEXT_WORD: {
+            console.log("reducer", DISCOVER_NEXT_WORD, action.nextIndex)
             return discoverNextWord(action.nextIndex);
         }
         default: {
@@ -105,23 +100,36 @@ export function word(state: IState, action: WordAction): IState {
             currentWordIndex: nextIndex,
         };
     }
-}
 
-function toggleWordToLearn(sourceWord: IParsedWord, wordStorage: VocabularyLocalStorage, state: IState) {
-    let word = { ...sourceWord };
-    if (word.toLearn) {
-        if (word.repeatNextTimes > 0) {
-            word.repeatNextTimes--;
+    function markWordToRepeat(word: IParsedWord) {
+        word.toLearn = false;
+        if (!word.repeatNextTimes) {
+            word.repeatNextTimes = 0;
         }
+        word.repeatNextTimes += 5;
+        wordStorage.addOrUpdate(word);
+        let words = replaceOldWithNewWord(state.words, word);
+        return { ...state, words: words };
     }
-    word.toLearn = !word.toLearn;
-    wordStorage.addOrUpdate(word);
-    let words = replaceOldWithNewWord(state.words, word);
-    return { ...state, words: words };
+    
+    function toggleWordToLearn(sourceWord: IParsedWord) {
+        let word = { ...sourceWord };
+        if (word.toLearn) {
+            if (word.repeatNextTimes > 0) {
+                word.repeatNextTimes--;
+            }
+        }
+        word.toLearn = !word.toLearn;
+        wordStorage.addOrUpdate(word);
+        let words = replaceOldWithNewWord(state.words, word);
+        return { ...state, words: words };
+    }
+    
 }
-
 function replaceOldWithNewWord(source: IParsedWord[], word: IParsedWord) {
     let words = source.filter(w => w.value !== word.value);
     words.push(word);
     return words;
 }
+
+
