@@ -1,15 +1,13 @@
 import * as React from "react";
 
-import { IState as IAppState, IState } from 'src/App';
+import { IState } from 'src/App';
 import { IParsingContext, IParsedWord } from "../models/ParsingResult";
 import { isNullOrUndefined } from "util";
 
 import WordBoard from "src/containers/WordBoard";
 import WordDiscovery from "src/containers/WordDiscovery";
-import TranslationDirection from "src/containers/TranslationDirection";
-import { Languages } from "src/constants/Languages";
 
-export interface IProps extends IAppState { }
+export interface IProps extends IState { }
 
 export interface IOwnProps extends IParsingContext { }
 
@@ -78,7 +76,6 @@ export class Board extends React.Component<IProps & IActionProps, IState> {
             </button>;
 
         return <div className="center">
-            <TranslationDirection />
             <textarea className="center full-width" rows={10} defaultValue={defaultText} onChange={e => this.text = e.target.value} />
             <br />
             <div className="center">

@@ -13,7 +13,7 @@ const mapStateToProps = (state: IAppState, ownProps: IOwnProps): IProps => ({
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.WordAction>): IActionProps => ({
     parseText: (text: string) => dispatch(actions.parseText(text)),
-    startWordDiscovery: () => dispatch(actions.startWordDiscovery())
+    startWordDiscovery: () => dispatch(actions.startWordDiscovery()),
 });
 
 export default connect<IProps, IActionProps, IOwnProps>(mapStateToProps, mapDispatchToProps)(Board);

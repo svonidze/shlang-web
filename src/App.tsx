@@ -11,7 +11,7 @@ import { word as wordReducer } from './reducers/index';
 import { IOwnProps } from './components/Board';
 import Board from './containers/Board';
 import Settings from './components/Settings';
-import Header from './components/Header';
+import Header from './containers/Header';
 import { IParsingResult } from './models/ParsingResult';
 import { Translations, ITranslationOption } from './models/Translation';
 
@@ -35,11 +35,11 @@ const Main = () => (
   </Switch>
 )
 function Home(props: any) {
-  const queryParams = props!.location!.search;
+  const queryParams = props.location.search;
   let boardProps: IOwnProps = {};
 
   if (queryParams) {
-    const query = new URLSearchParams(props.location.search);
+    const query = new URLSearchParams(queryParams);
     boardProps.text = query.get('text') || undefined;
     boardProps.url = query.get('url') || undefined;
     console.log('Home query params', boardProps);
@@ -47,9 +47,7 @@ function Home(props: any) {
 
   return (
     <div className="App-intro">
-      <Provider store={store}>
-        <Board text={boardProps.text} url={boardProps.url} />
-      </Provider>
+      <Board text={boardProps.text} url={boardProps.url} />
     </div>
   )
 }
@@ -57,12 +55,14 @@ function Home(props: any) {
 class App extends React.Component {
   public render() {
     return (
-      <BrowserRouter>
-        <div className="App">
-          <Header />
-          <Main />
-        </div>
-      </BrowserRouter>
+      <Provider store={store}>
+        <BrowserRouter>
+          <div className="App">
+            <Header />
+            <Main />
+          </div>
+        </BrowserRouter>
+      </Provider>
     );
   }
 }
