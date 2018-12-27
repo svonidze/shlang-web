@@ -1,10 +1,12 @@
 import * as React from "react";
 
 import { IParsedWord } from "../models/ParsingResult";
-import { ITranslation } from "src/models/Translation";
+import { ITranslation, ITranslationOption } from "src/models/Translation";
 
 export interface IState {
     mouseOver?: boolean;
+
+    //translationOption: ITranslationOption;
 }
 
 export interface IProps {
@@ -12,22 +14,25 @@ export interface IProps {
     focused?: boolean;
 
     translation?: ITranslation | undefined;
+
+    translationOption?: ITranslationOption;
 }
 
 export interface IActionProps {
     toggleWordToLearn: () => void;
     pressKeyOnWord: (event: React.KeyboardEvent) => void;
-    translateWord: () => Promise<void>;
+    translateWord: (option: ITranslationOption) => Promise<void>;
 }
 
 export class Word extends React.Component<IProps & IActionProps, IState> {
     constructor(props: IProps & IActionProps) {
         super(props);
-        this.state = {};
+        this.state = {}; //translationOption: props.translationOption!
     }
 
     render() {
-        let { word, focused, translation } = this.props;
+        let { word, focused, translation, translationOption } = this.props;
+        let { langFrom, langTo } = translationOption!;
 
         if (!word) {
             return <label>NO WORD</label>;
@@ -51,9 +56,12 @@ export class Word extends React.Component<IProps & IActionProps, IState> {
                     {word.value} *{word.repeatNextTimes}
                 </label>;
 
-        const translationElement = translation
-            ? translation.translatedWord
-            : mouseOver && <button onClick={this.props.translateWord}>Translate</button>;
+        const translationElement = translation && translation.translatedWord
+            ? `${langFrom}-${langTo}: ${translation.translatedWord}`
+            : mouseOver &&
+            <button onClick={() => this.props.translateWord(translationOption!)}>
+                Translate{langFrom && ` from ${langFrom}`} to {langTo}
+            </button>;
 
         return <tr onKeyUp={this.props.pressKeyOnWord}
             onMouseOver={() => this.onMouseOver(true)}

@@ -5,8 +5,9 @@
  * The languages that Google Translate supports (as of 5/15/16) alongside with their ISO 639-1 codes
  * See https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
  */
-export class GoogleLanguages {
-    static Languages = {
+export class Languages {
+    static readonly auto: string = 'auto';
+    static readonly list = {
         'auto': 'Automatic',
         'af': 'Afrikaans',
         'sq': 'Albanian',
@@ -118,27 +119,33 @@ export class GoogleLanguages {
      * @param {string} desiredLang – the name or the code of the desired language
      * @returns {string|undefined} The ISO 639-1 code of the language or 'undefined' if the language is not supported
      */
-    static getCode(desiredLang: string): string|undefined {
+    static getCode(desiredLang: string): string | undefined {
         if (!desiredLang) {
             return undefined;
         }
         desiredLang = desiredLang.toLowerCase();
-         if (GoogleLanguages.Languages[desiredLang]) {
+        if (Languages.list[desiredLang]) {
             return desiredLang;
         }
-         const keys = Object.keys(this.Languages).filter(function (key) {
-            if (typeof GoogleLanguages.Languages[key] !== 'string') {
+        const keys = Object.keys(this.list).filter((code) => {
+            if (typeof Languages.list[code] !== 'string') {
                 return undefined;
             }
-             return GoogleLanguages.Languages[key].toLowerCase() === desiredLang;
+            return Languages.list[code].toLowerCase() === desiredLang;
         });
-         return keys[0] || undefined;
+        return keys[0] || undefined;
     }
-     /**
-     * Returns true if the desiredLang is supported by Google Translate and false otherwise
-     * @param desiredLang – the ISO 639-1 code or the name of the desired language
-     * @returns {boolean}
-     */
+
+    static getAllCodes(options?: { except?: string[] }): string[] {
+        return Object.keys(this.list)
+            .filter(c => !options || !options.except || !options.except.some(e => e === c));
+    }
+
+    /**
+    * Returns true if the desiredLang is supported by Google Translate and false otherwise
+    * @param desiredLang – the ISO 639-1 code or the name of the desired language
+    * @returns {boolean}
+    */
     public static isSupported(desiredLang: string) {
         return Boolean(this.getCode(desiredLang));
     }

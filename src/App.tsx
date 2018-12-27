@@ -13,20 +13,18 @@ import Board from './containers/Board';
 import Settings from './components/Settings';
 import Header from './components/Header';
 import { IParsingResult } from './models/ParsingResult';
-import { Translations } from './models/Translation';
+import { Translations, ITranslationOption } from './models/Translation';
 
-export interface IState extends IParsingResult {
+export interface IState extends IParsingResult, ITranslationOption {
   wordDiscoveryRunning?: boolean;
   currentWordIndex?: number;
 
-  // langFrom: string;
-  // langTo: string;
   translations?: Translations;
 }
 
 const store = createStore<IState, actions.WordAction, any, any>(
   wordReducer,
-  { words: [] },
+  { words: [], langTo: 'ru' },
   applyMiddleware(thunkMiddleware));
 
 const Main = () => (

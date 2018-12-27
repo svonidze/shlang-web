@@ -28,6 +28,9 @@ export type STOP_WORD_DISCOVERY = typeof STOP_WORD_DISCOVERY;
 export const DISCOVER_NEXT_WORD = 'DISCOVER_NEXT_WORD';
 export type DISCOVER_NEXT_WORD = typeof DISCOVER_NEXT_WORD;
 
+export const SET_LANGTO = 'SET_LANGTO';
+export type SET_LANGTO = typeof SET_LANGTO;
+
 
 export const BACKUP_FILE = {
     MIME_type: 'application/json;charset=utf-8;',

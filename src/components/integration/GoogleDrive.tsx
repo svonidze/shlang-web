@@ -107,7 +107,7 @@ export class GoogleDrive extends React.Component<IProps, IState> {
     }
 
     render() {
-         const FileInfo = (file: IDriveFile) =>
+        const FileInfo = (file: IDriveFile) =>
             <a href={file.url}>
                 {`${file.name} (${file.id})`}
             </a>;
@@ -244,7 +244,6 @@ export class GoogleDrive extends React.Component<IProps, IState> {
     private updateStateWith(configFile: IDriveFile | undefined) {
         if (configFile) {
             this.configStore.setItem('file', JSON.stringify(configFile));
-
         }
         else {
             this.configStore.removeItem('file');
@@ -256,5 +255,4 @@ export class GoogleDrive extends React.Component<IProps, IState> {
         });
 
     }
-
 }

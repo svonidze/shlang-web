@@ -1,5 +1,5 @@
 import { GoogleTokenApi } from './GoogleTokenApi';
-import { GoogleLanguages } from './Languages';
+import { Languages } from '../../constants/Languages';
 
 export interface ITransaleOption {
     from?: string;
@@ -15,7 +15,7 @@ export class GoogleTranslateApi {
         opts = opts || {};
 
         for (const lang of [opts.from, opts.to]) {
-            if (lang && !GoogleLanguages.isSupported(lang)) {
+            if (lang && !Languages.isSupported(lang)) {
                 const e = new Error();
                 e.name = '400';
                 e.message = `The language '${lang}' is not supported`;
@@ -27,8 +27,8 @@ export class GoogleTranslateApi {
 
         opts.from = opts.from || 'auto';
         opts.to = opts.to || 'en';
-        opts.from = GoogleLanguages.getCode(opts.from);
-        opts.to = GoogleLanguages.getCode(opts.to);
+        opts.from = Languages.getCode(opts.from);
+        opts.to = Languages.getCode(opts.to);
         console.log(text, opts);
 
         const googleToken = new GoogleTokenApi();
