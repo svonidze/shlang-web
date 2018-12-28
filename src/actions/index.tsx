@@ -1,6 +1,6 @@
 import * as constants from '../constants'
 import { IParsedWord } from '../models/ParsingResult';
-import { ITranslation } from 'src/models/Translation';
+import { ITranslation, ITranslationOption } from 'src/models/Translation';
 
 export interface MarkWordToLearn {
     type: constants.TOGGLE_WORD_TO_LEARN,
@@ -25,7 +25,7 @@ export interface PressKeyOnWord {
 
 export interface SetTranslationToWord {
     type: constants.SET_TRANSLATION_TO_WORD,
-    translation: ITranslation;
+    translation: ITranslation & ITranslationOption;
 }
 
 export interface ParseText {
@@ -46,6 +46,12 @@ export interface DiscoverNextWord {
     nextIndex: number
 }
 
+export interface SetLangTo {
+    type: constants.SET_LANGTO,
+    langTo: string
+}
+
+
 export type WordAction = 
       MarkWordToLearn 
     | MarkWordToRepeat
@@ -55,7 +61,8 @@ export type WordAction =
     | ParseText 
     | StartWordDiscovery 
     | StopWordDiscovery 
-    | DiscoverNextWord;
+    | DiscoverNextWord
+    | SetLangTo;
 export type WordsAction = ParseText;
 
 export function toggleWordToLearn(word: IParsedWord): MarkWordToLearn {
@@ -87,7 +94,7 @@ export function pressKeyOnWord(word: IParsedWord, event: React.KeyboardEvent): P
     }
 }
 
-export function setTranslationToWord(translation: ITranslation): SetTranslationToWord {
+export function setTranslationToWord(translation: ITranslation & ITranslationOption): SetTranslationToWord {
     return {
         type: constants.SET_TRANSLATION_TO_WORD,
         translation: translation
@@ -117,5 +124,12 @@ export function discoverNextWord(nextIndex: number): DiscoverNextWord {
     return {
         type: constants.DISCOVER_NEXT_WORD,
         nextIndex: nextIndex
+    }
+}
+
+export function setLangTo(langTo: string): SetLangTo {
+    return {
+        type: constants.SET_LANGTO,
+        langTo: langTo
     }
 }

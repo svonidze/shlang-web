@@ -2,7 +2,7 @@ import { Key } from 'ts-keycode-enum';
 
 import { IState } from 'src/App';
 import { WordAction } from '../actions';
-import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD, MARK_WORD_TO_REPEAT, SET_TRANSLATION_TO_WORD } from '../constants/index';
+import { TOGGLE_WORD_TO_LEARN, PRESS_KEY_ON_WORD, PARSE_TEXT, START_WORD_DISCOVERY, STOP_WORD_DISCOVERY, DISCOVER_NEXT_WORD, MARK_WORD_TO_REPEAT, SET_TRANSLATION_TO_WORD, SET_LANGTO } from '../constants/index';
 import { parseInput } from '../services/Input'
 import { VocabularyLocalStorage } from '../services/VocabularyLocalStorage';
 import { IParsedWord } from '../models/ParsingResult';
@@ -45,7 +45,7 @@ export function word(state: IState, action: WordAction): IState {
                     word.toLearn = true;
                 }
             });
-            return parsingResult;
+            return { ...parsingResult, langTo: state.langTo };
         }
         case PRESS_KEY_ON_WORD: {
             const event = action.event;
@@ -91,6 +91,9 @@ export function word(state: IState, action: WordAction): IState {
         }
         case DISCOVER_NEXT_WORD: {
             return discoverNextWord(action.nextIndex);
+        }
+        case SET_LANGTO: {
+            return { ...state, langTo: action.langTo };
         }
         default: {
             console.warn('Action is not handled', action, state);

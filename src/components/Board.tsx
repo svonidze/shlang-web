@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import { IState as IAppState } from 'src/App';
+import { IState } from 'src/App';
 import { IParsingContext, IParsedWord } from "../models/ParsingResult";
 import { isNullOrUndefined } from "util";
 
 import WordBoard from "src/containers/WordBoard";
 import WordDiscovery from "src/containers/WordDiscovery";
 
-export interface IProps extends IAppState { }
+export interface IProps extends IState { }
 
 export interface IOwnProps extends IParsingContext { }
 
@@ -16,7 +16,7 @@ export interface IActionProps {
     startWordDiscovery: () => void;
 }
 
-export class Board extends React.Component<IProps & IActionProps> {
+export class Board extends React.Component<IProps & IActionProps, IState> {
     text: string;
 
     constructor(props: IProps & IActionProps) {
@@ -82,11 +82,7 @@ export class Board extends React.Component<IProps & IActionProps> {
                 <button className="right" onClick={() => this.props.parseText(this.text)}>Parse</button>
                 {DiscoverNewWordsButton()}
             </div>
-            {this.props.url &&
-                <section>
-                    <a href={this.props.url}>Source page</a>
-                </section>
-            }
+            {this.props.url && <a href={this.props.url}>Source page</a>}
             <div className="center">
                 <WordBoard
                     title='Learned words'

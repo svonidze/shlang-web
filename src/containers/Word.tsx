@@ -6,10 +6,17 @@ import { IProps, IActionProps, Word } from "src/components/Word";
 import { translateWord } from "src/actions/translating";
 import { ThunkDispatch } from "redux-thunk";
 
-const mapStateToProps = (state: IAppState, ownProps: IProps): IProps => ({ 
-    ...ownProps, 
-    translation: state.translations && state.translations.get(ownProps.word.value) 
-});
+const mapStateToProps = (state: IAppState, ownProps: IProps): IProps => {
+    const translation = ownProps.word &&
+        state.translations && state.translations.get(ownProps.word.value);
+    const newprop = {
+        ...ownProps,
+        translationOption: translation || ownProps.translationOption || { langFrom: state.langFrom, langTo: state.langTo },
+        translation: translation,
+    };
+
+    return newprop;
+};
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, any>, ownProps: IProps): IActionProps => ({
     toggleWordToLearn: () => dispatch(actions.toggleWordToLearn(ownProps.word)),
@@ -17,8 +24,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, any>, ownProps: IPro
         console.log('mapDispatchToProps', 'pressKeyOnWord', Key[event.keyCode]);
         dispatch(actions.pressKeyOnWord(ownProps.word, event));
     },
-    translateWord: async () => {
-        await dispatch(translateWord(ownProps.word.value, 'en', 'ru'));
+    translateWord: async (translationOption) => {
+        await dispatch(translateWord(ownProps.word.value, translationOption.langFrom, translationOption.langTo));
     }
 });
 
