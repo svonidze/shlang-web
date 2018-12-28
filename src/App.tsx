@@ -10,10 +10,11 @@ import * as actions from './actions/';
 import { word as wordReducer } from './reducers/index';
 import { IOwnProps } from './components/Board';
 import Board from './containers/Board';
-import Settings from './components/Settings';
+import Settings from './containers/Settings';
 import Header from './containers/Header';
 import { IParsingResult } from './models/ParsingResult';
 import { Translations, ITranslationOption } from './models/Translation';
+import UserConfigurationLocalStorage from './services/UserConfigurationLocalStorage';
 
 export interface IState extends IParsingResult, ITranslationOption {
   wordDiscoveryRunning?: boolean;
@@ -24,7 +25,10 @@ export interface IState extends IParsingResult, ITranslationOption {
 
 const store = createStore<IState, actions.WordAction, any, any>(
   wordReducer,
-  { words: [], langTo: 'ru' },
+  { 
+    words: [], 
+    langTo: (new UserConfigurationLocalStorage().get() || {}).preferedLangTo 
+  },
   applyMiddleware(thunkMiddleware));
 
 const Main = () => (

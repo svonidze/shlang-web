@@ -12,11 +12,12 @@ export interface IActionProps {
 
 export default class TranslationDirection extends React.Component<IProps & IActionProps> {
     render() {
-        const dropdownLangTo = <select value={this.props.defaultLang}
-            onChange={e => { console.log(e.target.value, e); this.props.setLang(e.target.value); }}>
-            {Languages.getAllCodes({ except: [Languages.auto] }).map(code =>
-                <option key={code} value={code} label={Languages.list[code]} />)}
-        </select>
+        const dropdownLangTo = (
+            <select value={this.props.defaultLang}
+                onChange={e => this.props.setLang(e.target.value)}>
+                {Languages.getAllCodes({ except: [Languages.auto] }).map(code =>
+                    <option key={code} value={code} label={Languages.list[code]} />)}
+            </select>);
 
         return <div>
             {this.props.title} {dropdownLangTo}

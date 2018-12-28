@@ -5,24 +5,43 @@ import { VocabularyLocalStorage } from '../services/VocabularyLocalStorage';
 import { GoogleDrive } from './integration/GoogleDrive';
 import { BACKUP_FILE } from 'src/constants';
 import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/services/UserConfiguration';
+import TranslationDirection from './TranslationDirection';
+import UserConfigurationLocalStorage from 'src/services/UserConfigurationLocalStorage';
 
-export default function Settings() {
-    const vocabularyStorage = new VocabularyLocalStorage();
+export interface IActionProps {
+    setLangTo: (langTo: string) => void;
+}
 
-    return (
-        <div>
-            <label>Backup</label>
-            <GoogleDrive></GoogleDrive>
-            {/* <button onClick={() => saveToCloud('Google Drive')}></button> */}
-            <br />
-            <button onClick={() => exportConfigAsFile()}>Export</button>
-            <button onClick={() => tryImportConfigFile()}>Import</button>
-        </div>
-    )
+export default class Settings extends React.Component<IActionProps> {
+    readonly vocabularyStorage = new VocabularyLocalStorage();
+    readonly userConfigStorage = new UserConfigurationLocalStorage();
 
+    render() {
+        return <div>
+            <div>
+                <label>Backup</label>
+                <GoogleDrive />
+                <br />
+                <button onClick={() => this.exportConfigAsFile()}>Export</button>
+                <button onClick={() => this.tryImportConfigFile()}>Import</button>
+                <br />
+                <TranslationDirection
+                    title='Translation language'
+                    defaultLang={(this.userConfigStorage.get() || {}).preferedLangTo}
+                    setLang={lang => {
+                        this.userConfigStorage.set({ preferedLangTo: lang });
+                        this.props.setLangTo(lang);
+                        // for some reason this will not be rerender even setLangTo dispatces changing of the global state 
+                        // probably the reason is due to Setting is placed at
+                        // <Switch> <Route exact path='/settings' component={Settings} />
+                        this.forceUpdate();
+                    }} />
+            </div>
+        </div>;
+    }
 
-    function exportConfigAsFile() {
-        const configuration = extractUserConfiguration(vocabularyStorage);
+    exportConfigAsFile() {
+        const configuration = extractUserConfiguration(this.vocabularyStorage);
         const blob = new Blob(
             [JSON.stringify(configuration)],
             { type: BACKUP_FILE.MIME_type });
@@ -30,7 +49,7 @@ export default function Settings() {
         saveAs(blob, BACKUP_FILE.name);
     }
 
-    function tryImportConfigFile() {
+    tryImportConfigFile() {
         const uploadDialog = document.createElement('input');
         uploadDialog.setAttribute('type', 'file');
         uploadDialog.setAttribute('style', 'display:none');
@@ -44,7 +63,7 @@ export default function Settings() {
 
             const fileReader = new FileReader();
             fileReader.onload = (onloadEvent) => {
-                parseAndSyncUserConfiguration(onloadEvent!.target!['result'], vocabularyStorage);
+                parseAndSyncUserConfiguration(onloadEvent.target!['result'], this.vocabularyStorage);
             };
 
             fileReader.readAsText(files[0]);
