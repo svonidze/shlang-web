@@ -23,11 +23,25 @@ export interface IState extends IParsingResult, ITranslationOption {
   translations?: Translations;
 }
 
+/*
+Use if need more than one reducer
+ export interface ICombinedState {
+  wordReducer: IState;
+  notificationSystem?: any;
+ }
+
+const reducers = combineReducers<ICombinedState, AnyAction>({ wordReducer: wordReducer });
+
+const store = createStore<ICombinedState, AnyAction, any, any>(
+  reducers,
+  {
+    wordReducer: {
+*/
 const store = createStore<IState, actions.WordAction, any, any>(
   wordReducer,
-  { 
-    words: [], 
-    langTo: (new UserConfigurationLocalStorage().get() || {}).preferedLangTo 
+  {
+    words: [],
+    langTo: (new UserConfigurationLocalStorage().get() || {}).preferedLangTo
   },
   applyMiddleware(thunkMiddleware));
 

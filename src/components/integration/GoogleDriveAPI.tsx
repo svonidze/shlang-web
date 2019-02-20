@@ -131,59 +131,13 @@ function downloadDriveFile1(fileId: string, callback: Function) {
     */
 }
 
-export function readFile(fileId: string, accessToken: string, callback: (data: any) => void) {
-    callback = callback || responseCallback;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "https://www.googleapis.com/drive/v3/files/" + fileId + '?alt=media', true);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-    xhr.responseType = 'arraybuffer'
-    xhr.onload = (e) => {
-        console.log(e, xhr, xhr.response);
-        let response: string = '';
-        switch (xhr.responseType) {
-            case "arraybuffer":
-                response = arrayBufferToString(xhr.response);
-                break;
-            case "json":
-                response = xhr.response;
-                break;
-            default:
-                console.error(`Response type '${xhr.responseType}' is not supported`, xhr.response);
-                break;
-        }
-
-        if (xhr.status !== 200) {
-            /* TODO parse the error response
-                        content {
-             "error": {
-              "errors": [
-               {
-                "domain": "global",
-                "reason": "fileNotDownloadable",
-                "message": "Only files with binary content can be downloaded. Use Export with Google Docs files.",
-                "locationType": "parameter",
-                "location": "alt"
-               }
-              ],
-              "code": 403,
-              "message": "Only files with binary content can be downloaded. Use Export with Google Docs files."
-             }
-            }
-            */
-            console.error(xhr.status, response);
-            return;
-        }
-        callback(response);
-    };
-    // xhr.onreadystatechange = function () {
-    //     if(xhr.readyState === 4 && xhr.status === 200) {
-    //       console.log(xhr.responseText);
-    //     }
-    //   };
-    xhr.onerror = (e) =>
-        alert("Error Status: " + e.target/*.status*/);
-    xhr.send();
+export function readFileAsText(fileId: string, accessToken: string): Promise<string> {
+    return fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        {
+            method: 'GET',
+            headers: [['Authorization', `Bearer ${accessToken}`]],
+        })
+        .then(response => response.text());
 }
 
 function responseCallback(response: any) { // gapi.client.Response<T>

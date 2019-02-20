@@ -19,9 +19,7 @@ export class GoogleTranslateApi {
                 const e = new Error();
                 e.name = '400';
                 e.message = `The language '${lang}' is not supported`;
-                return new Promise(function (resolve, reject) {
-                    reject(e);
-                });
+                return new Promise((resolve, reject) => reject(e));
             }
         }
 

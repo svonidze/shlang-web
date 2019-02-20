@@ -2,14 +2,18 @@ import { environment } from '../enviroment/enviroment';
 
 import { Logger } from './Logger';
 
-export let isDebugMode = !environment.production;
-
 const noop = (): any => undefined;
 
 export class ConsoleLoggerService implements Logger {
 
+    isDebugMode: boolean;
+
+    constructor(isDebugMode = !environment.production){
+        this.isDebugMode = isDebugMode;
+    }
+
     get info() {
-        if (isDebugMode) {
+        if (this.isDebugMode) {
             return console.info.bind(console);
         }
 
@@ -17,7 +21,7 @@ export class ConsoleLoggerService implements Logger {
     }
 
     get warn() {
-        if (isDebugMode) {
+        if (this.isDebugMode) {
             return console.warn.bind(console);
         }
 
@@ -25,15 +29,15 @@ export class ConsoleLoggerService implements Logger {
     }
 
     get error() {
-        if (isDebugMode) {
+        if (this.isDebugMode) {
             return console.error.bind(console);
         }
 
         return noop;
     }
 
-    invokeConsoleMethod(type: string, args?: any): void {
+    invokeConsoleMethod(type: string, ...args: any[]): void {
         const logFn: Function = (console)[type] || console.log || noop;
-        logFn.apply(console, [args]);
+        logFn.apply(console, args);
     }
 }

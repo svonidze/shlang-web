@@ -7,7 +7,7 @@ import { BACKUP_FILE } from 'src/constants';
 import { parseAndSyncUserConfiguration, extractUserConfiguration } from 'src/services/UserConfiguration';
 import TranslationDirection from './TranslationDirection';
 import UserConfigurationLocalStorage from 'src/services/UserConfigurationLocalStorage';
-
+ 
 export interface IActionProps {
     setLangTo: (langTo: string) => void;
 }
@@ -16,7 +16,7 @@ export default class Settings extends React.Component<IActionProps> {
     readonly vocabularyStorage = new VocabularyLocalStorage();
     readonly userConfigStorage = new UserConfigurationLocalStorage();
 
-    render() {
+    render() {      
         return <div>
             <div>
                 <label>Backup</label>
